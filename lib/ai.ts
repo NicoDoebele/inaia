@@ -20,10 +20,10 @@ export const generateGoalsFromDream = async (dreamText: string): Promise<LifeGoa
     });
   }
 
-  if (keywords.includes('hajj') || keywords.includes('umrah') || keywords.includes('mecca')) {
+  if (keywords.includes('travel') || keywords.includes('trip') || keywords.includes('tour') || keywords.includes('hajj') || keywords.includes('umrah') || keywords.includes('mecca')) {
     newGoals.push({
       id: Math.random().toString(36).substr(2, 9),
-      type: 'Hajj',
+      type: 'Travel',
       cost: 15000,
       year: currentYear + 5,
     });
@@ -139,7 +139,7 @@ export const generateFollowUpQuestion = async (dreamText: string): Promise<strin
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   const lower = dreamText.toLowerCase();
-  if (lower.includes('hajj')) return "Is this your first Hajj, or are you planning for family members too?";
+  if (lower.includes('travel') || lower.includes('trip') || lower.includes('hajj') || lower.includes('umrah')) return "Where is the first place you want to visit?";
   if (lower.includes('house')) return "Do you have a specific location in mind for this property?";
   if (lower.includes('retire')) return "What kind of lifestyle do you envision for your retirement? (e.g., Travel, Quiet, Family)";
   

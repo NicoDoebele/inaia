@@ -8,8 +8,9 @@ import { PortfolioEngine } from './PortfolioEngine';
 import { DreamWeaver } from './DreamWeaver';
 import { ScenarioSimulator } from './ScenarioSimulator';
 import { GuidedDiscovery } from './GuidedDiscovery';
+import { ParticleBackground } from './ui/ParticleBackground';
 
-export type GoalType = 'Hajj' | 'Education' | 'House' | 'Retirement' | 'Business';
+export type GoalType = 'Travel' | 'Education' | 'House' | 'Retirement' | 'Business';
 
 export interface LifeGoal {
   id: string;
@@ -23,6 +24,7 @@ export const ConsultationSession = () => {
   const [goals, setGoals] = useState<LifeGoal[]>([]);
   const [riskScore, setRiskScore] = useState(50); // 0 (Conservative) to 100 (Aggressive)
   const [monthlySavings, setMonthlySavings] = useState(1000);
+  const [dreamText, setDreamText] = useState<string>("");
 
   // Calculate Total Target Wealth based on goals
   const targetWealth = goals.reduce((acc, goal) => acc + goal.cost, 0);
@@ -47,25 +49,14 @@ export const ConsultationSession = () => {
     <div className="min-h-screen bg-inaia-navy text-inaia-white overflow-hidden relative font-sans selection:bg-inaia-gold selection:text-inaia-navy">
       
       {/* Background Ambient Animation */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-         <motion.div 
-           animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
-           transition={{ duration: 10, repeat: Infinity }}
-           className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-inaia-blue-accent/10 rounded-full blur-[100px]" 
-         />
-         <motion.div 
-           animate={{ opacity: [0.2, 0.4, 0.2], scale: [1, 1.2, 1] }}
-           transition={{ duration: 15, repeat: Infinity, delay: 2 }}
-           className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-inaia-gold/5 rounded-full blur-[120px]" 
-         />
-      </div>
+      <ParticleBackground />
 
       <div className="relative z-10 h-full flex flex-col">
         
         {/* Header */}
         <header className="p-6 flex justify-between items-center glass-panel m-4 mb-0">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-inaia-gold to-yellow-600 rounded-full flex items-center justify-center font-bold text-inaia-navy">I</div>
+            <div className="w-8 h-8 bg-linear-to-br from-inaia-gold to-yellow-600 rounded-full flex items-center justify-center font-bold text-inaia-navy">I</div>
             <h1 className="text-xl font-bold tracking-wider text-gradient-gold">INAIA</h1>
           </div>
           
@@ -89,7 +80,7 @@ export const ConsultationSession = () => {
                         </div>
                         <span className={`text-xs font-medium ${isActive ? 'text-white' : 'text-gray-600'}`}>{label}</span>
                      </div>
-                     {i < 4 && <div className="w-8 h-[1px] bg-gray-800"></div>}
+                     {i < 4 && <div className="w-8 h-px bg-gray-800"></div>}
                    </React.Fragment>
                  );
                })}
@@ -115,7 +106,7 @@ export const ConsultationSession = () => {
                   className="mb-8"
                 >
                    <Sparkles className="w-16 h-16 text-inaia-gold mx-auto mb-6" />
-                   <h2 className="text-5xl md:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400">
+                   <h2 className="text-5xl md:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-linear-to-b from-white to-gray-400">
                      The Future of <br/> 
                      <span className="text-gradient-gold">Ethical Wealth</span>
                    </h2>
@@ -142,7 +133,10 @@ export const ConsultationSession = () => {
               <DreamWeaver 
                 key="dream"
                 setGoals={setGoals}
-                onNext={() => setStep('refine')}
+                onNext={(text) => { 
+                   if (text) setDreamText(text); // Capture the context!
+                   setStep('refine'); 
+                }}
               />
             )}
 
@@ -180,6 +174,7 @@ export const ConsultationSession = () => {
                 setMonthlySavings={setMonthlySavings}
                 targetWealth={targetWealth}
                 onBack={() => setStep('scenarios')}
+                dreamText={dreamText} // Pass it down
               />
             )}
           </AnimatePresence>

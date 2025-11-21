@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Sparkles, Mic, StopCircle, MessageSquare, SkipForward } from 'lucide-react';
 import { generateGoalsFromDream, generateFollowUpQuestion } from '../lib/ai';
 import { LifeGoal } from './ConsultationSession';
+import { SpotlightCard } from './ui/SpotlightCard';
 
 interface DreamWeaverProps {
   setGoals: React.Dispatch<React.SetStateAction<LifeGoal[]>>;
-  onNext: () => void;
+  onNext: (text?: string) => void;
 }
 
 export const DreamWeaver: React.FC<DreamWeaverProps> = ({ setGoals, onNext }) => {
@@ -39,7 +40,8 @@ export const DreamWeaver: React.FC<DreamWeaverProps> = ({ setGoals, onNext }) =>
     try {
       const goals = await generateGoalsFromDream(dreamText);
       setGoals(goals);
-      onNext();
+      // Pass the original text to context
+      onNext(dreamText);
     } catch (error) {
       console.error("AI Failed", error);
     } finally {
@@ -65,7 +67,7 @@ export const DreamWeaver: React.FC<DreamWeaverProps> = ({ setGoals, onNext }) =>
            animate={{ scale: 1, opacity: 1 }}
            transition={{ delay: 0.2 }}
          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-transparent bg-clip-text bg-linear-to-b from-white to-gray-400">
               What is your <span className="text-gradient-gold">Dream Life?</span>
             </h2>
             <p className="text-gray-400 text-lg">
@@ -81,11 +83,11 @@ export const DreamWeaver: React.FC<DreamWeaverProps> = ({ setGoals, onNext }) =>
             exit={{ opacity: 0, x: -50 }}
             className="w-full relative"
           >
-            <div className="glass-panel p-1 rounded-2xl relative z-10 overflow-hidden group focus-within:border-inaia-gold/50 transition-colors">
+            <SpotlightCard className="p-1 rounded-2xl relative z-10 overflow-hidden group focus-within:border-inaia-gold/50 transition-colors bg-black/40">
                <textarea 
                  value={dreamText}
                  onChange={(e) => setDreamText(e.target.value)}
-                 placeholder="E.g., I want to perform Hajj in 5 years, buy a villa in Istanbul for my retirement, and send my two kids to medical school..."
+                 placeholder="E.g., I want to travel the world in 5 years, buy a villa in Istanbul for my retirement, and send my two kids to medical school..."
                  className="w-full h-48 bg-transparent text-xl text-white p-6 focus:outline-none resize-none placeholder:text-gray-600"
                  disabled={isAnalyzing}
                />
@@ -99,7 +101,7 @@ export const DreamWeaver: React.FC<DreamWeaverProps> = ({ setGoals, onNext }) =>
                      {isListening ? <StopCircle size={20} /> : <Mic size={20} />}
                   </button>
                </div>
-            </div>
+            </SpotlightCard>
             
             <div className="mt-8 flex flex-col items-center gap-4">
                <motion.button
@@ -135,7 +137,7 @@ export const DreamWeaver: React.FC<DreamWeaverProps> = ({ setGoals, onNext }) =>
             </div>
             
              <div className="mt-8 flex gap-2 justify-center">
-               {["I want to retire early", "Buy a home for my parents", "Go to Hajj next year"].map((suggestion, i) => (
+               {["I want to retire early", "Buy a home for my parents", "Go on a world tour next year"].map((suggestion, i) => (
                   <button 
                     key={i}
                     onClick={() => setDreamText(suggestion)}
@@ -153,7 +155,7 @@ export const DreamWeaver: React.FC<DreamWeaverProps> = ({ setGoals, onNext }) =>
             animate={{ opacity: 1, x: 0 }}
             className="w-full max-w-2xl bg-inaia-navy-light border border-inaia-gold/30 rounded-2xl p-8 text-center relative overflow-hidden"
           >
-             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-inaia-gold via-white to-inaia-gold animate-pulse"></div>
+             <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-inaia-gold via-white to-inaia-gold animate-pulse"></div>
              
              <div className="w-16 h-16 bg-inaia-gold/10 rounded-full flex items-center justify-center mx-auto mb-6 text-inaia-gold">
                 <MessageSquare size={32} />

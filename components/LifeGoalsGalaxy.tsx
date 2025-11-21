@@ -13,16 +13,15 @@ interface LifeGoalsGalaxyProps {
 }
 
 const GOAL_TYPES: { type: GoalType; icon: React.ElementType; label: string; defaultCost: number }[] = [
-  { type: 'Hajj', icon: Plane, label: 'Hajj / Umrah', defaultCost: 15000 },
+  { type: 'Travel', icon: Plane, label: 'World Travel', defaultCost: 15000 },
   { type: 'Education', icon: GraduationCap, label: "Child's Education", defaultCost: 50000 },
   { type: 'House', icon: Home, label: 'Dream Home', defaultCost: 400000 },
   { type: 'Retirement', icon: Coins, label: 'Retirement', defaultCost: 600000 },
-  { type: 'Business', icon: Briefcase, label: 'Halal Business', defaultCost: 100000 },
+  { type: 'Business', icon: Briefcase, label: 'Ethical Business', defaultCost: 100000 },
 ];
 
 const START_YEAR = new Date().getFullYear();
 const TIMELINE_YEARS = 30;
-const END_YEAR = START_YEAR + TIMELINE_YEARS;
 
 // Helper to generate random values safely outside render cycle or in handlers
 const generateRandomY = () => (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 80 + 40);
@@ -78,16 +77,14 @@ const GoalStar = ({
       animate={{ 
         scale: 1, 
         opacity: 1, 
-        // When dragging, we let the drag gesture control X. 
-        // When not dragging, we snap to the calculated % position based on year.
-        left: isDragging ? undefined : initialLeft, 
+        left: initialLeft, 
         top: `calc(50% + ${randomY}px)` 
       }}
       exit={{ scale: 0, opacity: 0 }}
       drag="x"
       dragMomentum={false}
       dragConstraints={containerRef}
-      dragElastic={0}
+      dragElastic={0} 
       onDragStart={() => setIsDragging(true)}
       onDrag={(event, info) => {
          if (!containerRef.current) return;
@@ -238,7 +235,7 @@ export const LifeGoalsGalaxy: React.FC<LifeGoalsGalaxyProps> = ({ goals, setGoal
         {/* Stars/Grid Animation Background */}
         <div className="absolute inset-0 z-0 opacity-30" style={{ backgroundImage: 'radial-gradient(white 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
 
-        <div className="relative z-10 flex-1 p-8 flex items-center justify-center" ref={universeRef}>
+        <div className="relative z-10 flex-1 p-8 flex items-center justify-center">
           {goals.length === 0 ? (
             <div className="text-center text-gray-500">
               <motion.div 
@@ -251,7 +248,7 @@ export const LifeGoalsGalaxy: React.FC<LifeGoalsGalaxyProps> = ({ goals, setGoal
               <p>Your universe is empty. Add a goal to begin.</p>
             </div>
           ) : (
-            <div className="w-full h-full relative">
+            <div className="w-full h-full relative" ref={universeRef}>
                {/* Timeline Line */}
                <div className="absolute top-1/2 left-0 w-full h-px bg-linear-to-r from-transparent via-inaia-gold/50 to-transparent"></div>
                
