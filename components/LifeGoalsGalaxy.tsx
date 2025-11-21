@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, ArrowRight, GraduationCap, Home, Plane, Coins, Briefcase } from 'lucide-react';
 import { GoalType, LifeGoal } from './ConsultationSession';
@@ -20,21 +20,159 @@ const GOAL_TYPES: { type: GoalType; icon: React.ElementType; label: string; defa
   { type: 'Business', icon: Briefcase, label: 'Halal Business', defaultCost: 100000 },
 ];
 
-export const LifeGoalsGalaxy: React.FC<LifeGoalsGalaxyProps> = ({ goals, setGoals, onNext }) => {
+const START_YEAR = new Date().getFullYear();
+const TIMELINE_YEARS = 30;
+const END_YEAR = START_YEAR + TIMELINE_YEARS;
+
+// Helper to generate random values safely outside render cycle or in handlers
+const generateRandomY = () => (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 80 + 40);
+const generateId = () => Math.random().toString(36).substr(2, 9);
+const generateRandomYear = () => START_YEAR + 5 + Math.floor(Math.random() * 10);
+
+const GoalStar = ({ 
+  goal, 
+  removeGoal, 
+  updateGoalYear, 
+  containerRef 
+}: { 
+  goal: LifeGoal; 
+  removeGoal: (id: string) => void; 
+  updateGoalYear: (id: string, newYear: number) => void;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+}) => {
+  const GoalIcon = GOAL_TYPES.find(t => t.type === goal.type)?.icon || Plus;
+  const [isDragging, setIsDragging] = useState(false);
+  const [localYear, setLocalYear] = useState(goal.year);
   
+  // Initialize randomY once per component instance
+  const [randomY] = useState(generateRandomY);
+
+  // Calculate percentage position based on year
+  // Maps year range [START_YEAR, END_YEAR] to [5%, 95%]
+  const getPositionFromYear = (y: number) => {
+    const rawPercent = (y - START_YEAR) / TIMELINE_YEARS;
+    return 5 + (rawPercent * 90); // Map 0-1 to 5-95%
+  };
+
+  const initialLeft = `${getPositionFromYear(goal.year)}%`;
+
+  // Correctly reverse map pixel X coordinate back to Year
+  const calculateYearFromX = (x: number, rectWidth: number) => {
+    // The active area is from 5% to 95% of rectWidth
+    const startX = rectWidth * 0.05;
+    const activeWidth = rectWidth * 0.90;
+
+    // Calculate progress within the active area
+    // clamp relativeX between 0 and activeWidth
+    const relativeX = Math.max(0, Math.min(activeWidth, x - startX));
+    
+    const ratio = relativeX / activeWidth;
+    
+    return Math.round(START_YEAR + (ratio * TIMELINE_YEARS));
+  };
+
+  return (
+    <motion.div
+      layoutId={goal.id}
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ 
+        scale: 1, 
+        opacity: 1, 
+        // When dragging, we let the drag gesture control X. 
+        // When not dragging, we snap to the calculated % position based on year.
+        left: isDragging ? undefined : initialLeft, 
+        top: `calc(50% + ${randomY}px)` 
+      }}
+      exit={{ scale: 0, opacity: 0 }}
+      drag="x"
+      dragMomentum={false}
+      dragConstraints={containerRef}
+      dragElastic={0}
+      onDragStart={() => setIsDragging(true)}
+      onDrag={(event, info) => {
+         if (!containerRef.current) return;
+         const rect = containerRef.current.getBoundingClientRect();
+         // info.point.x is page-relative coordinates
+         // We need position relative to the container
+         const relativeX = info.point.x - rect.left;
+         
+         const newYear = calculateYearFromX(relativeX, rect.width);
+         setLocalYear(newYear);
+      }}
+      onDragEnd={(event, info) => {
+         setIsDragging(false);
+         if (!containerRef.current) return;
+         const rect = containerRef.current.getBoundingClientRect();
+         const relativeX = info.point.x - rect.left;
+         
+         const newYear = calculateYearFromX(relativeX, rect.width);
+         updateGoalYear(goal.id, newYear);
+      }}
+      className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing group z-10"
+      style={{ left: initialLeft, top: '50%' }} // Fallback/SSR style
+    >
+       <div className="relative">
+         {/* Connecting Line to timeline */}
+         <motion.div 
+           animate={{ height: isDragging ? 0 : Math.abs(randomY), opacity: isDragging ? 0.5 : 1 }}
+           className={clsx(
+             "absolute left-1/2 w-px bg-linear-to-b from-inaia-gold/50 to-transparent -translate-x-1/2 -z-10",
+             randomY > 0 ? "bottom-full origin-bottom" : "top-full origin-top"
+           )}
+         />
+
+         {/* The Star/Planet */}
+         <div className={clsx(
+           "w-16 h-16 rounded-full bg-inaia-navy border-2 shadow-[0_0_30px_rgba(212,175,55,0.4)] flex items-center justify-center relative z-10 transition-all duration-300",
+           isDragging ? "scale-125 border-white shadow-[0_0_50px_rgba(255,255,255,0.5)]" : "border-inaia-gold group-hover:scale-110"
+         )}>
+           <GoalIcon className={isDragging ? "text-white" : "text-inaia-gold"} size={isDragging ? 32 : 24} />
+         </div>
+
+         {/* Delete Button */}
+         <button 
+           onClick={(e) => { e.stopPropagation(); removeGoal(goal.id); }}
+           className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-red-600"
+         >
+           <Trash2 size={12} />
+         </button>
+
+         {/* Label */}
+         <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 text-center w-40 pointer-events-none">
+           <div className="text-sm font-bold text-white shadow-black drop-shadow-md">{goal.type}</div>
+           <div className="text-xs text-inaia-gold font-mono">€{goal.cost.toLocaleString()}</div>
+           <div className={clsx(
+             "text-xs transition-all duration-200 font-bold",
+             isDragging ? "text-white text-lg scale-125" : "text-gray-400"
+           )}>
+             {isDragging ? localYear : goal.year}
+           </div>
+         </div>
+       </div>
+    </motion.div>
+  );
+};
+
+export const LifeGoalsGalaxy: React.FC<LifeGoalsGalaxyProps> = ({ goals, setGoals, onNext }) => {
+  const universeRef = useRef<HTMLDivElement>(null);
+
   const addGoal = (type: GoalType) => {
     const template = GOAL_TYPES.find(g => g.type === type);
     const newGoal: LifeGoal = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: generateId(),
       type,
       cost: template?.defaultCost || 0,
-      year: new Date().getFullYear() + 5 + Math.floor(Math.random() * 10) // Random future date
+      year: generateRandomYear()
     };
     setGoals([...goals, newGoal]);
   };
 
   const removeGoal = (id: string) => {
     setGoals(goals.filter(g => g.id !== id));
+  };
+
+  const updateGoalYear = (id: string, newYear: number) => {
+    setGoals(prev => prev.map(g => g.id === id ? { ...g, year: newYear } : g));
   };
 
   const totalNeed = goals.reduce((acc, g) => acc + g.cost, 0);
@@ -50,7 +188,7 @@ export const LifeGoalsGalaxy: React.FC<LifeGoalsGalaxyProps> = ({ goals, setGoal
       <div className="w-full lg:w-1/4 flex flex-col gap-6">
         <div className="glass-panel p-6 flex-1">
           <h3 className="text-xl font-bold text-inaia-gold mb-4">Life Goal Stars</h3>
-          <p className="text-sm text-gray-400 mb-6">Drag or click to add goals to your universe.</p>
+          <p className="text-sm text-gray-400 mb-6">Drag to timeline to add goals. Drag stars to adjust year.</p>
           
           <div className="grid grid-cols-1 gap-3">
             {GOAL_TYPES.map((goal) => (
@@ -95,12 +233,12 @@ export const LifeGoalsGalaxy: React.FC<LifeGoalsGalaxyProps> = ({ goals, setGoal
 
       {/* The Universe (Visualization Area) */}
       <div className="flex-1 glass-panel relative overflow-hidden flex flex-col">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-inaia-blue-accent/20 via-inaia-navy to-inaia-navy z-0"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-inaia-blue-accent/20 via-inaia-navy to-inaia-navy z-0"></div>
         
         {/* Stars/Grid Animation Background */}
         <div className="absolute inset-0 z-0 opacity-30" style={{ backgroundImage: 'radial-gradient(white 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
 
-        <div className="relative z-10 flex-1 p-8 flex items-center justify-center">
+        <div className="relative z-10 flex-1 p-8 flex items-center justify-center" ref={universeRef}>
           {goals.length === 0 ? (
             <div className="text-center text-gray-500">
               <motion.div 
@@ -115,72 +253,42 @@ export const LifeGoalsGalaxy: React.FC<LifeGoalsGalaxyProps> = ({ goals, setGoal
           ) : (
             <div className="w-full h-full relative">
                {/* Timeline Line */}
-               <div className="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-inaia-gold/50 to-transparent"></div>
+               <div className="absolute top-1/2 left-0 w-full h-px bg-linear-to-r from-transparent via-inaia-gold/50 to-transparent"></div>
                
+               {/* Year Markers (Every 5 years) */}
+               <div className="absolute top-1/2 left-0 w-full h-0">
+                  {Array.from({ length: 7 }).map((_, i) => {
+                    const year = START_YEAR + (i * 5);
+                    const percent = 5 + ((i * 5) / TIMELINE_YEARS) * 90;
+                    return (
+                      <div key={year} className="absolute transform -translate-x-1/2 top-4 flex flex-col items-center" style={{ left: `${percent}%` }}>
+                         <div className="w-px h-2 bg-white/20 mb-1"></div>
+                         <div className="text-[10px] text-gray-500">{year}</div>
+                      </div>
+                    );
+                  })}
+               </div>
+
                <AnimatePresence>
-                 {goals.map((goal, index) => {
-                   const GoalIcon = GOAL_TYPES.find(t => t.type === goal.type)?.icon || Plus;
-                   // Random positioning for "Galaxy" feel but somewhat ordered
-                   const randomY = (index % 2 === 0 ? -1 : 1) * (Math.random() * 100 + 50);
-                   const leftPos = `${((index + 1) / (goals.length + 1)) * 100}%`;
-
-                   return (
-                     <motion.div
-                       key={goal.id}
-                       layoutId={goal.id}
-                       initial={{ scale: 0, opacity: 0 }}
-                       animate={{ scale: 1, opacity: 1, left: leftPos, top: `calc(50% + ${randomY}px)` }}
-                       exit={{ scale: 0, opacity: 0 }}
-                       drag
-                       dragConstraints={{ left: 0, right: 0, top: -200, bottom: 200 }} // Allow some vertical play
-                       className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing group"
-                       style={{ left: leftPos, top: '50%' }} // Initial layout position, overridden by animate
-                     >
-                        <div className="relative">
-                          {/* Connecting Line to timeline */}
-                          <motion.div 
-                            initial={{ height: 0 }}
-                            animate={{ height: Math.abs(randomY) }}
-                            className={clsx(
-                              "absolute left-1/2 w-[1px] bg-gradient-to-b from-inaia-gold/50 to-transparent -translate-x-1/2 -z-10",
-                              randomY > 0 ? "bottom-full origin-bottom" : "top-full origin-top"
-                            )}
-                          />
-
-                          {/* The Star/Planet */}
-                          <div className="w-16 h-16 rounded-full bg-inaia-navy border-2 border-inaia-gold shadow-[0_0_30px_rgba(212,175,55,0.4)] flex items-center justify-center relative z-10 group-hover:scale-110 transition-transform duration-300">
-                            <GoalIcon className="text-inaia-gold w-8 h-8" />
-                          </div>
-
-                          {/* Delete Button */}
-                          <button 
-                            onClick={() => removeGoal(goal.id)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-red-600"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-
-                          {/* Label */}
-                          <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 text-center w-32 pointer-events-none">
-                            <div className="text-sm font-bold text-white shadow-black drop-shadow-md">{goal.type}</div>
-                            <div className="text-xs text-inaia-gold font-mono">€{goal.cost.toLocaleString()}</div>
-                            <div className="text-[10px] text-gray-400">{goal.year}</div>
-                          </div>
-                        </div>
-                     </motion.div>
-                   );
-                 })}
+                 {goals.map((goal) => (
+                    <GoalStar 
+                      key={goal.id} 
+                      goal={goal} 
+                      removeGoal={removeGoal} 
+                      updateGoalYear={updateGoalYear}
+                      containerRef={universeRef}
+                    />
+                 ))}
                </AnimatePresence>
             </div>
           )}
         </div>
         
-        <div className="p-4 bg-inaia-navy/50 backdrop-blur-sm border-t border-white/5 flex justify-between text-xs text-gray-500 uppercase tracking-wider">
-           <span>Present Day</span>
-           <span>Future Horizon (20+ Years)</span>
+        <div className="p-4 bg-inaia-navy/50 backdrop-blur-sm border-t border-white/5 flex justify-between text-xs text-gray-500 uppercase tracking-wider z-20 relative">
+           <span>{START_YEAR}</span>
+           <span>Timeline Horizon ({START_YEAR + TIMELINE_YEARS})</span>
         </div>
       </div>
     </motion.div>
   );
 };
-
