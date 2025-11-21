@@ -1,26 +1,43 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-inaia-navy: #050A14;
+  --color-inaia-navy-light: #0F172A;
+  --color-inaia-gold: #D4AF37;
+  --color-inaia-gold-hover: #B59328;
+  --color-inaia-white: #F8FAFC;
+  --color-inaia-glass: rgba(15, 23, 42, 0.6);
+  --color-inaia-glass-border: rgba(212, 175, 55, 0.2);
+  
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  
+  --animate-float: float 6s ease-in-out infinite;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer utilities {
+  .glass-panel {
+    @apply bg-inaia-glass backdrop-blur-xl border border-inaia-glass-border shadow-xl rounded-2xl;
   }
+  
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-inaia-gold via-yellow-200 to-inaia-gold;
+  }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+:root {
+  --background: var(--color-inaia-navy);
+  --foreground: var(--color-inaia-white);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
 }
