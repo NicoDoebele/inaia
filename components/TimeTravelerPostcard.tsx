@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
+import { generateScenarioImage } from '@/lib/actions';
 
 interface TimeTravelerPostcardProps {
     scenario: {
@@ -29,13 +30,35 @@ export const TimeTravelerPostcard: React.FC<TimeTravelerPostcardProps> = ({ scen
     const [selected, setSelected] = useState<'safe' | 'risky' | null>(null);
     const [isGenerating, setIsGenerating] = useState(true);
 
+    const [safeImage, setSafeImage] = useState<string | null>(null);
+    const [riskyImage, setRiskyImage] = useState<string | null>(null);
+
     React.useEffect(() => {
-        // Simulate AI Generation time
-        const timer = setTimeout(() => {
-            setIsGenerating(false);
-        }, 2000);
-        return () => clearTimeout(timer);
-    }, []);
+        let mounted = true;
+
+        const generateImages = async () => {
+            try {
+                // Generate both images in parallel
+                const [safeResult, riskyResult] = await Promise.all([
+                    generateScenarioImage(scenario.scenarioA.imagePrompt),
+                    generateScenarioImage(scenario.scenarioB.imagePrompt)
+                ]);
+
+                if (mounted) {
+                    setSafeImage(safeResult);
+                    setRiskyImage(riskyResult);
+                    setIsGenerating(false);
+                }
+            } catch (error) {
+                console.error("Failed to generate images:", error);
+                if (mounted) setIsGenerating(false);
+            }
+        };
+
+        generateImages();
+
+        return () => { mounted = false; };
+    }, [scenario]);
 
     const handleSelect = (choice: 'safe' | 'risky') => {
         setSelected(choice);
@@ -92,7 +115,7 @@ export const TimeTravelerPostcard: React.FC<TimeTravelerPostcardProps> = ({ scen
                                     className="relative w-full h-full"
                                 >
                                     <Image
-                                        src="/assets/safe-cottage.png"
+                                        src={safeImage || "/assets/safe-cottage.png"}
                                         alt={scenario.scenarioA.title}
                                         fill
                                         className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -157,7 +180,7 @@ export const TimeTravelerPostcard: React.FC<TimeTravelerPostcardProps> = ({ scen
                                     className="relative w-full h-full"
                                 >
                                     <Image
-                                        src="/assets/risky-villa.png"
+                                        src={riskyImage || "/assets/risky-villa.png"}
                                         alt={scenario.scenarioB.title}
                                         fill
                                         className="object-cover transition-transform duration-700 group-hover:scale-110"

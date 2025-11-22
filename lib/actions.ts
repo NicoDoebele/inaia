@@ -211,3 +211,16 @@ export async function getAdvisoryStep(history: { type: string; answer: string | 
   }
 }
 
+
+// --- Image Generation Action ---
+
+import { generateImage } from './image-generation';
+
+export async function generateScenarioImage(prompt: string): Promise<string | null> {
+  // Add some context to the prompt to ensure style consistency if needed, 
+  // or trust the prompt from the AI.
+  // For now, we pass it directly but ensure it's safe.
+  if (!prompt) return null;
+  
+  return await generateImage(prompt);
+}
