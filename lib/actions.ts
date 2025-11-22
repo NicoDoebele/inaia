@@ -3,7 +3,7 @@
 import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
-import { INAIA_PRODUCTS } from './products';
+import PRODUCTS_DATA from '../products.json';
 
 // --- Types ---
 
@@ -130,7 +130,7 @@ export async function getAdvisoryStep(history: { type: string; answer: string | 
   // 1. Construct Context
   const context = `
     You are an expert Islamic Wealth Advisor. Your goal is to construct a personalized portfolio from the following products:
-    ${JSON.stringify(INAIA_PRODUCTS.map(p => ({ id: p.id, name: p.name, type: p.type, risk: p.riskLevel })))}
+    ${JSON.stringify(PRODUCTS_DATA.investment_products)}
 
     Current Session History:
     ${JSON.stringify(history)}
@@ -150,6 +150,12 @@ export async function getAdvisoryStep(history: { type: string; answer: string | 
       1. Risk Attitude (via Postcard).
       2. Emotional Resilience -> Use 'crisis' scenario (MANDATORY before Result).
       3. (Financial Capacity is likely already answered in history).
+
+    - **STEP FREQUENCY RULES (STRICT):**
+      - Check the history for a step with type: 'postcard'. If it exists, **DO NOT GENERATE ANOTHER POSTCARD**.
+      - Check the history for a step with type: 'crisis'. If it exists, **DO NOT GENERATE ANOTHER CRISIS**.
+      - 'postcard' should ideally happen early (steps 3-6).
+      - 'crisis' should ideally happen later (steps 7-9), but MUST happen before the result.
     - DO NOT ask direct financial questions like "What is your risk tolerance?".
     - Ask INDIRECT, psychological, or lifestyle questions.
     - Options for multiple choice MUST be either 2 or 4 options (never 3).

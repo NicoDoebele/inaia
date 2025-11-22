@@ -22,7 +22,8 @@
                 "Inflation Protection",
                 "Ethically sourced (Green Gold)",
                 "LBMA Certified"
-            ]
+            ],
+            "expected_return": "Inflation + 2%"
         },
         {
             "id": "silver_physical",
@@ -46,7 +47,8 @@
                 "High industrial demand",
                 "VAT exempt options (Swiss storage)",
                 "Historical wealth builder"
-            ]
+            ],
+            "expected_return": "Inflation + 5%"
         },
         {
             "id": "platinum_palladium_basket",
@@ -70,7 +72,8 @@
                 "Critical for Automotive/Hydrogen",
                 "Limited supply (Russia/South Africa)",
                 "Currently undervalued relative to gold"
-            ]
+            ],
+            "expected_return": "6-10%"
         },
         {
             "id": "ishares_usd_sukuk",
@@ -94,7 +97,8 @@
                 "Invests in Sovereign & Corporate Sukuk (Saudi Arabia, UAE, Indonesia)",
                 "Regular Income (Distributing)",
                 "Low volatility"
-            ]
+            ],
+            "expected_return": "4-5%"
         },
         {
             "id": "ishares_msci_world_islamic",
@@ -126,7 +130,8 @@
                     "Exxon Mobil",
                     "Johnson & Johnson"
                 ]
-            }
+            },
+            "expected_return": "8-10%"
         },
         {
             "id": "ishares_msci_usa_islamic",
@@ -158,7 +163,8 @@
                     "Exxon Mobil",
                     "Salesforce"
                 ]
-            }
+            },
+            "expected_return": "10-12%"
         },
         {
             "id": "ishares_msci_em_islamic",
@@ -191,7 +197,8 @@
                     "Samsung",
                     "Reliance Industries"
                 ]
-            }
+            },
+            "expected_return": "9-14%"
         },
         {
             "id": "saturna_al_kawthar_global",
@@ -220,7 +227,8 @@
                     "ASML",
                     "Microsoft"
                 ]
-            }
+            },
+            "expected_return": "8-11%"
         }
     ]
 }
