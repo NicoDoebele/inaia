@@ -93,12 +93,70 @@
                 "simulation_reaction": "When the 'Breaking News' hits, this asset barely moves. It provides cash flow (dividends) while others panic.",
                 "best_for_user_who_says": "Ignore the news. I'm going golfing."
             },
+            "allocations": {
+                "top_regions": [
+                    "Saudi Arabia (33%)",
+                    "UAE (24%)",
+                    "Supranational (8%)",
+                    "Indonesia (8%)",
+                    "Turkey (8%)"
+                ],
+                "top_companies": [
+                    "THE REPUBLIC 7.25% (2%)",
+                    "Hazine Müstesarligi (2%)",
+                    "SA Global Sukuk Ltd (1%)",
+                    "KSA Sukuk Ltd (1%)"
+                ]
+            },
             "key_features": [
-                "Invests in Sovereign & Corporate Sukuk (Saudi Arabia, UAE, Indonesia)",
+                "Invests in Sovereign & Corporate Sukuk",
                 "Regular Income (Distributing)",
                 "Low volatility"
             ],
             "expected_return": "4-5%"
+        },
+        {
+            "id": "global-fund",
+            "name": "Invesco Dow Jones Islamic Global ETF",
+            "type": "Global Equities",
+            "risk_profile": {
+                "level": "Medium-High",
+                "description": "Broad exposure to developed markets (USA, Japan, Europe). Tech heavy."
+            },
+            "scenario_1_postcard": {
+                "archetype": "The Modern City Apartment",
+                "visual_prompt_keywords": "skyline view, modern architecture, connected world, globe, diverse people, steady growth",
+                "outcome_description": "A luxury apartment in a major global city. It grows with the world economy. It's safer than a single villa, but if the global economy shakes, you feel it."
+            },
+            "scenario_2_crisis": {
+                "crisis_behavior": "Market Correlated",
+                "simulation_reaction": "Drops in sync with the 'Global Markets' alert. Heavy tech exposure means it reacts to Nasdaq/Tech news.",
+                "best_for_user_who_says": "I'll hold. The world economy always recovers eventually."
+            },
+            "allocations": {
+                "top_sectors": [
+                    "Technology (38%)",
+                    "Healthcare (13%)",
+                    "Consumer Disc (13%)",
+                    "Industrials (11%)",
+                    "Communication (7%)"
+                ],
+                "top_regions": [
+                    "USA (78%)",
+                    "Japan (5%)",
+                    "Switzerland (3%)",
+                    "UK (3%)",
+                    "Canada (2%)"
+                ],
+                "top_companies": [
+                    "Microsoft Corp (7%)",
+                    "Nvidia Corp (7%)",
+                    "Apple Inc (6%)",
+                    "Amazon.com (4%)",
+                    "Meta Platforms (3%)"
+                ]
+            },
+            "expected_return": "8-10%"
         },
         {
             "id": "ishares_msci_world_islamic",
@@ -120,15 +178,25 @@
             },
             "allocations": {
                 "top_sectors": [
-                    "Tech (37%)",
+                    "Technology (38%)",
+                    "Industrials (14%)",
                     "Healthcare (13%)",
-                    "Energy (10%)"
+                    "Energy (10%)",
+                    "Materials (9%)"
+                ],
+                "top_regions": [
+                    "USA (66%)",
+                    "Japan (7%)",
+                    "France (5%)",
+                    "Canada (4%)",
+                    "Switzerland (3%)"
                 ],
                 "top_companies": [
-                    "Microsoft",
-                    "Tesla",
-                    "Exxon Mobil",
-                    "Johnson & Johnson"
+                    "Microsoft Corp (14%)",
+                    "Tesla Inc (6%)",
+                    "Exxon Mobil (2%)",
+                    "Johnson & Johnson (2%)",
+                    "ASML Holding (2%)"
                 ]
             },
             "expected_return": "8-10%"
@@ -153,15 +221,21 @@
             },
             "allocations": {
                 "top_sectors": [
-                    "Tech (43%)",
+                    "Technology (44%)",
                     "Healthcare (13%)",
-                    "Consumer Goods (12%)"
+                    "Consumer Disc (12%)",
+                    "Energy (10%)",
+                    "Industrials (9%)"
+                ],
+                "top_regions": [
+                    "USA (100%)"
                 ],
                 "top_companies": [
-                    "Microsoft",
-                    "Tesla",
-                    "Exxon Mobil",
-                    "Salesforce"
+                    "Microsoft Corp (14%)",
+                    "Tesla Inc (10%)",
+                    "Exxon Mobil (4%)",
+                    "Johnson & Johnson (4%)",
+                    "AMD (3%)"
                 ]
             },
             "expected_return": "10-12%"
@@ -185,17 +259,26 @@
                 "best_for_user_who_says": "I want maximum growth and can stomach the rollercoaster."
             },
             "allocations": {
+                "top_sectors": [
+                    "Technology (39%)",
+                    "Materials (13%)",
+                    "Energy (11%)",
+                    "Industrials (9%)",
+                    "Healthcare (7%)"
+                ],
                 "top_regions": [
-                    "Korea",
-                    "India",
-                    "China",
-                    "Taiwan",
-                    "Saudi Arabia"
+                    "South Korea (30%)",
+                    "India (17%)",
+                    "China (14%)",
+                    "Taiwan (13%)",
+                    "Saudi Arabia (7%)"
                 ],
                 "top_companies": [
-                    "TSMC",
-                    "Samsung",
-                    "Reliance Industries"
+                    "Samsung Electronics (12%)",
+                    "Hynix Sem (7%)",
+                    "Hon Hai Precision (3%)",
+                    "Reliance Industries (3%)",
+                    "Xiaomi Corp (3%)"
                 ]
             },
             "expected_return": "9-14%"
@@ -220,12 +303,26 @@
             },
             "allocations": {
                 "style": "Active Management, ESG & Sharia Compliant",
+                "top_sectors": [
+                    "Technology (35%)",
+                    "Industrials (15%)",
+                    "Healthcare (15%)",
+                    "Materials (10%)",
+                    "Consumer Disc (10%)"
+                ],
+                "top_regions": [
+                    "USA (64%)",
+                    "Netherlands (8%)",
+                    "Japan (5%)",
+                    "UK (5%)",
+                    "France (5%)"
+                ],
                 "top_companies": [
-                    "TSMC",
-                    "Alphabet",
-                    "Canadian Pacific",
-                    "ASML",
-                    "Microsoft"
+                    "TSMC (3%)",
+                    "Alphabet Class C (3%)",
+                    "Canadian Pacific (3%)",
+                    "ASML Holding (3%)",
+                    "Accenture Plc (3%)"
                 ]
             },
             "expected_return": "8-11%"
