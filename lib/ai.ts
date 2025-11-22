@@ -1,4 +1,4 @@
-import { LifeGoal } from '../components/ConsultationSession';
+import { LifeGoal } from '../components/LifeGoalsGalaxy';
 
 // Mocked response for now, simulating structured output from an LLM
 // In a real app, this would call OpenAI/Gemini with the user's text

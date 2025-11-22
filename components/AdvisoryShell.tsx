@@ -7,6 +7,7 @@ import { getAdvisoryStep, AdvisoryStep } from '../lib/actions';
 import { TimeTravelerPostcard } from './TimeTravelerPostcard';
 import { CrisisSimulator } from './CrisisSimulator';
 import { PortfolioEngine } from './PortfolioEngine';
+import { LifeGoalsGalaxy, LifeGoal } from './LifeGoalsGalaxy';
 
 export const AdvisoryShell = () => {
     const [history, setHistory] = useState<{ type: string; answer: string | number | object }[]>([]);
@@ -18,6 +19,7 @@ export const AdvisoryShell = () => {
 
     const [monthlySavings, setMonthlySavings] = useState(500); // Default value
     const [targetWealth, setTargetWealth] = useState(1000000); // Default value
+    const [lifeGoals, setLifeGoals] = useState<LifeGoal[]>([]);
 
 
     const fetchNextStep = useCallback(async (currentHistory: typeof history) => {
@@ -25,76 +27,25 @@ export const AdvisoryShell = () => {
 
         // --- HARDCODED PHASE ---
 
-        // Step 1: House Question (Always first)
+        // Step 1: Life Goals Galaxy (Always first)
         if (currentHistory.length === 0) {
+            setCurrentStep({
+                type: 'galaxy',
+                progress: 10,
+                content: {
+                    title: "Design Your Life Galaxy",
+                    description: "Add stars for your major life goals."
+                }
+            });
+            setLoading(false);
+            return;
+        }
+
+        // Step 2: Monthly Investment (After Galaxy)
+        if (currentHistory.length === 1) {
             setCurrentStep({
                 type: 'question',
                 progress: 10,
-                content: {
-                    question: "Is buying a dream home a key priority for you?",
-                    subtext: "We'll prioritize your portfolio for this major milestone.",
-                    inputType: 'choice',
-                    options: [
-                        { label: "Yes, absolutely", value: "yes_house", icon: "🏠" },
-                        { label: "No, I have other goals", value: "no_house", icon: "🚀" }
-                    ]
-                }
-            });
-            setLoading(false);
-            return;
-        }
-
-        // Step 2: Conditional Logic
-        const lastAnswer = currentHistory[currentHistory.length - 1];
-
-        // If User said YES to House -> Ask Timeline (Slider)
-        if (currentHistory.length === 1 && lastAnswer.answer === 'yes_house') {
-            setCurrentStep({
-                type: 'question',
-                progress: 20,
-                content: {
-                    question: "How many years until you plan to buy?",
-                    subtext: "This helps us adjust risk exposure as the date approaches.",
-                    inputType: 'slider',
-                    sliderConfig: {
-                        min: 1,
-                        max: 15,
-                        step: 1,
-                        unit: " Years",
-                        label: "Timeline"
-                    }
-                }
-            });
-            setLoading(false);
-            return;
-        }
-
-        // If User said NO to House -> Ask Primary Goal (Alternative)
-        if (currentHistory.length === 1 && lastAnswer.answer === 'no_house') {
-            setCurrentStep({
-                type: 'question',
-                progress: 20,
-                content: {
-                    question: "What is your primary goal for this wealth?",
-                    subtext: "We'll tailor the strategy to your life stage.",
-                    inputType: 'choice',
-                    options: [
-                        { label: "Retirement", value: "retirement", icon: "🌴" },
-                        { label: "Generational Wealth", value: "legacy", icon: "🏛️" },
-                        { label: "Hajj / Umrah", value: "hajj", icon: "🕋" },
-                        { label: "General Growth", value: "growth", icon: "📈" }
-                    ]
-                }
-            });
-            setLoading(false);
-            return;
-        }
-
-        // Step 3: Monthly Investment (Always third)
-        if (currentHistory.length === 2) {
-            setCurrentStep({
-                type: 'question',
-                progress: 30,
                 content: {
                     question: "How much could you comfortably invest monthly?",
                     subtext: "We'll use this to project your future wealth.",
@@ -112,30 +63,8 @@ export const AdvisoryShell = () => {
             return;
         }
 
-        // Step 4: Target Wealth (New)
-        if (currentHistory.length === 3) {
-            setCurrentStep({
-                type: 'question',
-                progress: 40,
-                content: {
-                    question: "What is your target wealth goal?",
-                    subtext: "We'll design a strategy to help you reach this milestone.",
-                    inputType: 'slider',
-                    sliderConfig: {
-                        min: 100000,
-                        max: 5000000,
-                        step: 50000,
-                        unit: "€",
-                        label: "Target Wealth"
-                    }
-                }
-            });
-            setLoading(false);
-            return;
-        }
-
-        // --- AI PHASE ---
-        // If we have 3 or more answers, hand off to AI.
+        // AI Phase starts after step 2 now
+        // If we have 2 or more answers, hand off to AI.
 
         try {
             const step = await getAdvisoryStep(currentHistory);
@@ -179,6 +108,18 @@ export const AdvisoryShell = () => {
         setInputText("");
     };
 
+    const handleGalaxyNext = () => {
+        const total = lifeGoals.reduce((acc, g) => acc + g.cost, 0);
+        setTargetWealth(total > 0 ? total : 1000000); // Default if empty
+        
+        // Pass detailed goal info to the history so the AI can see it
+        handleAnswer({
+            event: "life_goals_defined",
+            totalCost: total,
+            goals: lifeGoals.map(g => ({ type: g.type, year: g.year, cost: g.cost }))
+        });
+    };
+
     if (loading && !currentStep) {
         return (
             <div className="w-full h-full flex flex-col items-center justify-center text-white">
@@ -192,12 +133,16 @@ export const AdvisoryShell = () => {
 
     return (
         <div className="w-full h-full flex flex-col relative">
-            {/* Designed Progress Bar - Hidden on Result */}
-            {currentStep.type !== 'result' && (
+            {/* Designed Progress Bar - Hidden on Result and Galaxy */}
+            {currentStep.type !== 'result' && currentStep.type !== 'galaxy' && (
                 <div className="absolute top-0 left-0 w-full p-6 z-50 pointer-events-none">
                     <div className="max-w-3xl mx-auto flex items-center gap-2">
                         {Array.from({ length: 10 }).map((_, i) => {
-                            const isActive = i < (currentStep.progress / 100) * 10;
+                            // Static progress: 1 bar (10%) per completed step in history
+                            // Galaxy (step 1) is in history when we see the next step.
+                            // So history.length = 1 -> 10% (1 bar).
+                            const currentProgress = Math.max(10, history.length * 10);
+                            const isActive = i < (currentProgress / 100) * 10;
                             return (
                                 <div key={i} className="h-1 flex-1 bg-white/10 rounded-full overflow-hidden">
                                     <motion.div
@@ -305,6 +250,17 @@ export const AdvisoryShell = () => {
                                     </button>
                                 </form>
                             )}
+                        </motion.div>
+                    )}
+
+                    {/* TYPE: GALAXY */}
+                    {currentStep.type === 'galaxy' && (
+                        <motion.div key="galaxy" className="w-full h-full">
+                            <LifeGoalsGalaxy 
+                                goals={lifeGoals}
+                                setGoals={setLifeGoals}
+                                onNext={handleGalaxyNext}
+                            />
                         </motion.div>
                     )}
 

@@ -3,8 +3,16 @@
 import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, ArrowRight, GraduationCap, Home, Plane, Coins, Briefcase } from 'lucide-react';
-import { GoalType, LifeGoal } from './ConsultationSession';
 import clsx from 'clsx';
+
+export type GoalType = 'Travel' | 'Education' | 'House' | 'Retirement' | 'Business';
+
+export interface LifeGoal {
+  id: string;
+  type: GoalType;
+  cost: number;
+  year: number;
+}
 
 interface LifeGoalsGalaxyProps {
   goals: LifeGoal[];
@@ -223,7 +231,7 @@ export const LifeGoalsGalaxy: React.FC<LifeGoalsGalaxyProps> = ({ goals, setGoal
             onClick={onNext}
             className="mt-6 w-full py-3 bg-inaia-gold text-inaia-navy font-bold rounded-lg hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2"
           >
-            Next: Risk Profile <ArrowRight size={18} />
+            Next Step <ArrowRight size={18} />
           </button>
         </div>
       </div>
