@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Shield, CheckCircle, Info } from 'lucide-react';
 import { LifeGoal } from './ConsultationSession';
-import { INAIA_PRODUCTS } from '../lib/products';
+import PRODUCTS_DATA from '../products.json';
 import { SpotlightCard } from './ui/SpotlightCard';
 
 interface PortfolioEngineProps {
@@ -110,7 +110,7 @@ export const PortfolioEngine: React.FC<PortfolioEngineProps> = ({
 
       // Calculate value for each allocation
       recommendation.allocations.forEach((alloc: { productId: string; percentage: number }) => {
-        const product = INAIA_PRODUCTS.find(p => p.id === alloc.productId);
+        const product = PRODUCTS_DATA.investment_products.find(p => p.id === alloc.productId);
         let rate = 0.05; // Default base rate
 
         // Determine rate based on product type and selected scenario
@@ -230,7 +230,7 @@ export const PortfolioEngine: React.FC<PortfolioEngineProps> = ({
                 [1, 2, 3].map(i => <div key={i} className="h-16 bg-white/5 rounded-lg animate-pulse" />)
               ) : (
                 recommendation?.allocations.map((alloc) => {
-                  const product = INAIA_PRODUCTS.find(p => p.id === alloc.productId);
+                  const product = PRODUCTS_DATA.investment_products.find(p => p.id === alloc.productId);
                   return (
                     <motion.div
                       key={alloc.productId}
@@ -241,7 +241,7 @@ export const PortfolioEngine: React.FC<PortfolioEngineProps> = ({
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <div className="text-inaia-gold font-bold">{product?.name}</div>
-                          <div className="text-xs text-gray-500">{product?.type} • {product?.expectedReturn} Return</div>
+                          <div className="text-xs text-gray-500">{product?.type} • {product?.expected_return} Return</div>
                         </div>
                         <div className="text-xl font-bold text-white">{alloc.percentage}%</div>
                       </div>
