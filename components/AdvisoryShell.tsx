@@ -108,6 +108,14 @@ export const AdvisoryShell = () => {
         setInputText("");
     };
 
+    const handleBack = () => {
+        if (history.length > 0) {
+            const newHistory = history.slice(0, -1);
+            setHistory(newHistory);
+            fetchNextStep(newHistory);
+        }
+    };
+
     const handleGalaxyNext = () => {
         const total = lifeGoals.reduce((acc, g) => acc + g.cost, 0);
         setTargetWealth(total > 0 ? total : 1000000); // Default if empty
@@ -293,7 +301,7 @@ export const AdvisoryShell = () => {
                                 monthlySavings={monthlySavings}
                                 setMonthlySavings={setMonthlySavings}
                                 targetWealth={targetWealth}
-                                onBack={() => { }} // No-op
+                                onBack={handleBack}
                                 dreamText="" // Legacy prop
                                 aiRecommendation={currentStep.content} // NEW PROP
                             />

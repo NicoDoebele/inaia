@@ -2,10 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Shield, CheckCircle, Info } from 'lucide-react';
+import { ArrowLeft, Shield, CheckCircle, Info, PieChart, ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { LifeGoal } from './ConsultationSession';
 import PRODUCTS_DATA from '../products.json';
 import { SpotlightCard } from './ui/SpotlightCard';
+import { EtfAnalysis } from './EtfAnalysis';
 
 interface PortfolioEngineProps {
   goals: LifeGoal[];
@@ -40,6 +42,8 @@ export const PortfolioEngine: React.FC<PortfolioEngineProps> = ({
   onBack,
   aiRecommendation
 }) => {
+  const router = useRouter();
+  const [showDeepDive, setShowDeepDive] = useState(false);
 
   const [fetchedRecommendation, setFetchedRecommendation] = useState<PortfolioEngineProps['aiRecommendation'] | null>(null);
   const [loading, setLoading] = useState(!aiRecommendation);
@@ -160,6 +164,19 @@ export const PortfolioEngine: React.FC<PortfolioEngineProps> = ({
 
   const { line, area, max: maxVal } = generatePath(600, 300); // Virtual dimensions
 
+  if (showDeepDive) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="fixed inset-0 z-50 bg-inaia-navy overflow-y-auto"
+      >
+        <EtfAnalysis onBack={() => setShowDeepDive(false)} />
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -265,6 +282,17 @@ export const PortfolioEngine: React.FC<PortfolioEngineProps> = ({
                   );
                 })
               )}
+            </div>
+
+            <div className="p-4 border-t border-white/5 bg-white/5">
+              <button
+                onClick={() => setShowDeepDive(true)}
+                className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold text-gray-300 hover:text-white hover:border-inaia-gold hover:bg-white/10 transition-all flex items-center justify-center gap-2 group"
+              >
+                <PieChart size={16} className="text-inaia-gold group-hover:scale-110 transition-transform" />
+                Deep Dive Analysis
+                <ArrowRight size={16} className="opacity-0 group-hover:opacity-100 -ml-4 group-hover:ml-0 transition-all" />
+              </button>
             </div>
           </div>
         </div>
