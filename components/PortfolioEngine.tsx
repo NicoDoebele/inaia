@@ -23,6 +23,11 @@ interface PortfolioEngineProps {
       percentage: number;
       reasoning: string;
     }[];
+    investmentTiers?: {
+      low: { amount: number; label: string };
+      mid: { amount: number; label: string };
+      high: { amount: number; label: string };
+    };
   };
 }
 
@@ -74,7 +79,12 @@ export const PortfolioEngine: React.FC<PortfolioEngineProps> = ({
             percentage: isAggressive ? 10 : (isConservative ? 30 : 20),
             reasoning: "Steady, rental-based income stream."
           }
-        ]
+        ],
+        investmentTiers: {
+          low: { amount: Math.round(monthlySavings * 0.7), label: "Starter" },
+          mid: { amount: monthlySavings, label: "Recommended" },
+          high: { amount: Math.round(monthlySavings * 1.3), label: "Accelerator" }
+        }
       };
 
       setFetchedRecommendation(result);
@@ -327,23 +337,45 @@ export const PortfolioEngine: React.FC<PortfolioEngineProps> = ({
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Monthly Investment</h3>
 
             <div className="grid grid-cols-3 gap-3 mb-4">
-              {[
-                { label: "Starter", val: Math.max(50, monthlySavings * 0.5) },
-                { label: "Recommended", val: monthlySavings },
-                { label: "Accelerator", val: monthlySavings * 1.5 }
-              ].map((opt) => (
-                <button
-                  key={opt.label}
-                  onClick={() => setMonthlySavings(opt.val)}
-                  className={`p-3 rounded-lg border transition-all ${monthlySavings === opt.val
+              {recommendation?.investmentTiers ? (
+                // Dynamic Tiers from AI - Enforce Order: Low -> Mid -> High
+                (['low', 'mid', 'high'] as const).map((key) => {
+                  const tier = recommendation.investmentTiers![key];
+                  if (!tier) return null;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setMonthlySavings(tier.amount)}
+                      className={`p-3 rounded-lg border transition-all ${monthlySavings === tier.amount
+                        ? 'bg-inaia-gold text-inaia-navy border-inaia-gold font-bold shadow-lg scale-105'
+                        : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'
+                        }`}
+                    >
+                      <div className="text-xs mb-1 opacity-70">{tier.label}</div>
+                      <div className="text-lg">€{tier.amount.toLocaleString()}</div>
+                    </button>
+                  );
+                })
+              ) : (
+                // Fallback if no tiers provided (Legacy)
+                [
+                  { label: "Starter", val: Math.max(50, monthlySavings * 0.5) },
+                  { label: "Recommended", val: monthlySavings },
+                  { label: "Accelerator", val: monthlySavings * 1.5 }
+                ].map((opt) => (
+                  <button
+                    key={opt.label}
+                    onClick={() => setMonthlySavings(opt.val)}
+                    className={`p-3 rounded-lg border transition-all ${monthlySavings === opt.val
                       ? 'bg-inaia-gold text-inaia-navy border-inaia-gold font-bold shadow-lg scale-105'
                       : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'
-                    }`}
-                >
-                  <div className="text-xs mb-1 opacity-70">{opt.label}</div>
-                  <div className="text-lg">€{opt.val.toLocaleString()}</div>
-                </button>
-              ))}
+                      }`}
+                  >
+                    <div className="text-xs mb-1 opacity-70">{opt.label}</div>
+                    <div className="text-lg">€{opt.val.toLocaleString()}</div>
+                  </button>
+                ))
+              )}
             </div>
 
             <div className="flex justify-between text-sm text-gray-400 pt-4 border-t border-white/10">

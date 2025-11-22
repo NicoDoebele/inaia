@@ -1,18 +1,17 @@
 "use client";
 
-import React, { useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import React from 'react';
 
 interface SpotlightCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
-  spotlightColor?: string;
+  spotlightColor?: string; // Kept for API compatibility
 }
 
 export const SpotlightCard: React.FC<SpotlightCardProps> = ({
   children,
   className = "",
-  spotlightColor = "rgba(212, 175, 55, 0.2)", // Unused in simple version but kept for API compatibility
+  spotlightColor, // Unused but destructured to avoid passing to div
   ...props
 }) => {
   return (

@@ -18,12 +18,21 @@ const QuestionSchema = z.object({
   content: z.object({
     question: z.string(),
     subtext: z.string().optional(),
-    inputType: z.enum(['text', 'choice']),
+    inputType: z.enum(['text', 'choice', 'slider']),
+    // Options for choice
     options: z.array(z.object({
       label: z.string(),
       value: z.string(),
       icon: z.string().optional()
-    })).optional()
+    })).optional(),
+    // Config for slider
+    sliderConfig: z.object({
+      min: z.number(),
+      max: z.number(),
+      step: z.number(),
+      unit: z.string().optional(),
+      label: z.string().optional() // e.g., "Monthly Income"
+    }).optional()
   })
 });
 
@@ -73,7 +82,12 @@ const ResultSchema = z.object({
       percentage: z.number(),
       reasoning: z.string()
     })),
-    projectedOutcome: z.string()
+    projectedOutcome: z.string(),
+    investmentTiers: z.object({
+      low: z.object({ amount: z.number(), label: z.string() }),
+      mid: z.object({ amount: z.number(), label: z.string() }),
+      high: z.object({ amount: z.number(), label: z.string() })
+    }).describe("Suggested monthly investment amounts: Conservative (Low), Recommended (Mid), Aggressive (High)")
   })
 });
 
@@ -103,26 +117,32 @@ export async function getAdvisoryStep(history: { type: string; answer: string | 
     ${JSON.stringify(history)}
 
     Instructions:
-    - You are guiding a short, impactful discovery session (Max 6 steps).
-    - Analyze the history. If history length is > 5, YOU MUST GENERATE A RESULT.
+    - You are guiding a meaningful discovery session.
+    - Analyze the history. The user may have already answered some hardcoded questions about life goals.
+    - Target roughly 10 questions total.
+    - If history length is >= 10, YOU MUST GENERATE A RESULT.
     - Ensure you cover these key topics if missing:
-      1. Life Goals (House, Kids, Retirement).
-      2. Risk Attitude (via Postcard or indirect question).
-      3. Investment Horizon.
-      4. Financial Capacity (Monthly savings potential) - Ask this near the end.
+      1. Risk Attitude (via Postcard).
+      2. Emotional Resilience -> Use 'crisis' scenario (MANDATORY before Result).
+      3. (Financial Capacity is likely already answered in history).
     - DO NOT ask direct financial questions like "What is your risk tolerance?".
     - Ask INDIRECT, psychological, or lifestyle questions.
     - Options for multiple choice MUST be either 2 or 4 options (never 3).
     
     Progress Logic:
-    - Calculate progress based on history length: Math.round(((history.length + 1) / 7) * 100).
-    - Start at ~15% for the first question.
+    - Calculate progress based on history length: Math.round(((history.length + 1) / 10) * 100).
+    - Start at 40% (assuming 3 hardcoded questions already answered).
     - NEVER decrease progress.
     
     Guidelines:
     - Keep questions simple and relatable.
     - Avoid financial jargon.
-    - If you have enough info (or history > 4), provide the RESULT.
+    - Use 'slider' for money questions (e.g. "How much could you invest monthly?").
+    - ALWAYS trigger a 'crisis' scenario step before the final result to test resilience.
+    - In the RESULT, you MUST provide 'investmentTiers' (Low, Mid, High).
+    - 'Mid' MUST be the amount the user indicated in the slider (or a reasonable estimate if not explicit).
+    - 'Low' should be ~70% of Mid.
+    - 'High' should be ~130% of Mid.
 
     IMPORTANT: Your response must be a JSON object with a single key "step" containing the advisory step data.
   `;

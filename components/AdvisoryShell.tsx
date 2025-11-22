@@ -16,8 +16,103 @@ export const AdvisoryShell = () => {
 
     const hasFetched = useRef(false);
 
+    const [monthlySavings, setMonthlySavings] = useState(500); // Default value
+
     const fetchNextStep = useCallback(async (currentHistory: typeof history) => {
         setLoading(true);
+
+        // --- HARDCODED PHASE ---
+
+        // Step 1: House Question (Always first)
+        if (currentHistory.length === 0) {
+            setCurrentStep({
+                type: 'question',
+                progress: 10,
+                content: {
+                    question: "Is buying a dream home a key priority for you?",
+                    subtext: "We'll prioritize your portfolio for this major milestone.",
+                    inputType: 'choice',
+                    options: [
+                        { label: "Yes, absolutely", value: "yes_house", icon: "🏠" },
+                        { label: "No, I have other goals", value: "no_house", icon: "🚀" }
+                    ]
+                }
+            });
+            setLoading(false);
+            return;
+        }
+
+        // Step 2: Conditional Logic
+        const lastAnswer = currentHistory[currentHistory.length - 1];
+
+        // If User said YES to House -> Ask Timeline (Slider)
+        if (currentHistory.length === 1 && lastAnswer.answer === 'yes_house') {
+            setCurrentStep({
+                type: 'question',
+                progress: 20,
+                content: {
+                    question: "How many years until you plan to buy?",
+                    subtext: "This helps us adjust risk exposure as the date approaches.",
+                    inputType: 'slider',
+                    sliderConfig: {
+                        min: 1,
+                        max: 15,
+                        step: 1,
+                        unit: " Years",
+                        label: "Timeline"
+                    }
+                }
+            });
+            setLoading(false);
+            return;
+        }
+
+        // If User said NO to House -> Ask Primary Goal (Alternative)
+        if (currentHistory.length === 1 && lastAnswer.answer === 'no_house') {
+            setCurrentStep({
+                type: 'question',
+                progress: 20,
+                content: {
+                    question: "What is your primary goal for this wealth?",
+                    subtext: "We'll tailor the strategy to your life stage.",
+                    inputType: 'choice',
+                    options: [
+                        { label: "Retirement", value: "retirement", icon: "🌴" },
+                        { label: "Generational Wealth", value: "legacy", icon: "🏛️" },
+                        { label: "Hajj / Umrah", value: "hajj", icon: "🕋" },
+                        { label: "General Growth", value: "growth", icon: "📈" }
+                    ]
+                }
+            });
+            setLoading(false);
+            return;
+        }
+
+        // Step 3: Monthly Investment (Always third)
+        if (currentHistory.length === 2) {
+            setCurrentStep({
+                type: 'question',
+                progress: 30,
+                content: {
+                    question: "How much could you comfortably invest monthly?",
+                    subtext: "We'll use this to project your future wealth.",
+                    inputType: 'slider',
+                    sliderConfig: {
+                        min: 100,
+                        max: 5000,
+                        step: 50,
+                        unit: "€",
+                        label: "Monthly Amount"
+                    }
+                }
+            });
+            setLoading(false);
+            return;
+        }
+
+        // --- AI PHASE ---
+        // If we have 3 or more answers, hand off to AI.
+
         try {
             const step = await getAdvisoryStep(currentHistory);
             setCurrentStep(step);
@@ -38,6 +133,13 @@ export const AdvisoryShell = () => {
     const handleAnswer = (answer: string | number | object) => {
         const newHistory = [...history, { type: currentStep?.type || 'unknown', answer }];
         setHistory(newHistory);
+
+        // If the answer is a number (from slider), update monthly savings
+        if (typeof answer === 'number') {
+            setMonthlySavings(answer);
+        }
+
+        setInputText(""); // Reset input for next step
         fetchNextStep(newHistory);
     };
 
@@ -65,8 +167,8 @@ export const AdvisoryShell = () => {
             {currentStep.type !== 'result' && (
                 <div className="absolute top-0 left-0 w-full p-6 z-50 pointer-events-none">
                     <div className="max-w-3xl mx-auto flex items-center gap-2">
-                        {Array.from({ length: 6 }).map((_, i) => {
-                            const isActive = i < (currentStep.progress / 100) * 6;
+                        {Array.from({ length: 10 }).map((_, i) => {
+                            const isActive = i < (currentStep.progress / 100) * 10;
                             return (
                                 <div key={i} className="h-1 flex-1 bg-white/10 rounded-full overflow-hidden">
                                     <motion.div
@@ -113,6 +215,47 @@ export const AdvisoryShell = () => {
                                             <span className="text-lg font-bold text-white group-hover:text-inaia-gold">{opt.label}</span>
                                         </button>
                                     ))}
+                                </div>
+                            ) : currentStep.content.inputType === 'slider' && currentStep.content.sliderConfig ? (
+                                <div className="w-full max-w-xl mx-auto">
+                                    <div className="bg-white/5 backdrop-blur-md p-10 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden group">
+                                        <div className="absolute inset-0 bg-gradient-to-b from-inaia-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                                        <div className="relative z-10">
+                                            <div className="text-center mb-10">
+                                                <div className="text-sm text-inaia-gold font-bold uppercase tracking-widest mb-2">{currentStep.content.sliderConfig.label || "Amount"}</div>
+                                                <div className="text-6xl font-bold text-white flex items-center justify-center gap-1">
+                                                    <span className="text-3xl text-gray-500 self-start mt-2">{currentStep.content.sliderConfig.unit}</span>
+                                                    {Number(inputText || currentStep.content.sliderConfig.min).toLocaleString()}
+                                                </div>
+                                            </div>
+
+                                            <div className="relative h-12 flex items-center mb-8">
+                                                <input
+                                                    type="range"
+                                                    min={currentStep.content.sliderConfig.min}
+                                                    max={currentStep.content.sliderConfig.max}
+                                                    step={currentStep.content.sliderConfig.step}
+                                                    value={inputText || currentStep.content.sliderConfig.min}
+                                                    onChange={(e) => setInputText(e.target.value)}
+                                                    className="w-full h-2 bg-gray-700 rounded-full appearance-none cursor-pointer accent-inaia-gold z-20 relative"
+                                                />
+                                                {/* Custom Track Styling could go here if needed, but accent-color works well for now */}
+                                            </div>
+
+                                            <div className="flex justify-between text-xs text-gray-500 font-mono uppercase tracking-wider mb-8">
+                                                <span>{currentStep.content.sliderConfig.unit}{currentStep.content.sliderConfig.min.toLocaleString()}</span>
+                                                <span>{currentStep.content.sliderConfig.unit}{currentStep.content.sliderConfig.max.toLocaleString()}</span>
+                                            </div>
+
+                                            <button
+                                                onClick={() => handleAnswer(Number(inputText || currentStep.content.sliderConfig?.min))}
+                                                className="w-full py-4 bg-inaia-gold text-inaia-navy font-bold text-lg rounded-xl hover:bg-yellow-400 hover:scale-[1.02] transition-all shadow-lg shadow-inaia-gold/20"
+                                            >
+                                                Confirm Amount
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             ) : (
                                 <form onSubmit={handleTextSubmit} className="relative max-w-xl mx-auto">
@@ -162,8 +305,8 @@ export const AdvisoryShell = () => {
                             <PortfolioEngine
                                 goals={[]} // Legacy prop, can be mocked or derived
                                 riskScore={50} // Legacy prop
-                                monthlySavings={1000} // Legacy prop
-                                setMonthlySavings={() => { }} // No-op
+                                monthlySavings={monthlySavings}
+                                setMonthlySavings={setMonthlySavings}
                                 targetWealth={1000000} // Legacy prop
                                 onBack={() => { }} // No-op
                                 dreamText="" // Legacy prop
@@ -176,14 +319,16 @@ export const AdvisoryShell = () => {
             </div>
 
             {/* Loading Overlay */}
-            {loading && currentStep && (
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center">
-                    <div className="flex flex-col items-center">
-                        <Sparkles className="w-12 h-12 animate-spin text-inaia-gold mb-4" />
-                        <p className="text-white font-medium">Thinking...</p>
+            {
+                loading && currentStep && (
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center">
+                        <div className="flex flex-col items-center">
+                            <Sparkles className="w-12 h-12 animate-spin text-inaia-gold mb-4" />
+                            <p className="text-white font-medium">Thinking...</p>
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
