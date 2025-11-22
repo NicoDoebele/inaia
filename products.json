@@ -1,0 +1,226 @@
+{
+    "investment_products": [
+        {
+            "id": "gold_physical",
+            "name": "Physical Gold",
+            "type": "Precious Metal",
+            "risk_profile": {
+                "level": "Low-Medium",
+                "description": "Crisis hedge. Maintains value when currencies fail."
+            },
+            "scenario_1_postcard": {
+                "archetype": "The Fortress",
+                "visual_prompt_keywords": "ancient stone vault, golden light, stability, timeless, calm shield, protection from storm",
+                "outcome_description": "A secure, unbreakable safe. You might not get the massive expansion of the Villa, but the storm outside won't touch you."
+            },
+            "scenario_2_crisis": {
+                "crisis_behavior": "Defensive",
+                "simulation_reaction": "This is the 'Option B' asset. When the market crashes 20%, this asset usually holds steady or increases.",
+                "best_for_user_who_says": "Call my broker to sell the risky assets and buy gold."
+            },
+            "key_features": [
+                "Inflation Protection",
+                "Ethically sourced (Green Gold)",
+                "LBMA Certified"
+            ]
+        },
+        {
+            "id": "silver_physical",
+            "name": "Physical Silver",
+            "type": "Precious Metal",
+            "risk_profile": {
+                "level": "Medium-High",
+                "description": "Volatile but high potential. Dual role as money and industrial commodity."
+            },
+            "scenario_1_postcard": {
+                "archetype": "The Workshop",
+                "visual_prompt_keywords": "industrial energy, shiny metal, machinery, electricity, high activity, dynamic movement",
+                "outcome_description": "A bustling, high-energy workshop. It fluctuates with the economy's pulse. It's not a passive cottage; it's an active engine."
+            },
+            "scenario_2_crisis": {
+                "crisis_behavior": "Volatile",
+                "simulation_reaction": "Prices may swing wildly depending on industrial demand (e.g., if the crisis is a recession, silver might dip).",
+                "best_for_user_who_says": "Log in and buy more while they are cheap."
+            },
+            "key_features": [
+                "High industrial demand",
+                "VAT exempt options (Swiss storage)",
+                "Historical wealth builder"
+            ]
+        },
+        {
+            "id": "platinum_palladium_basket",
+            "name": "Platinum & Palladium",
+            "type": "Industrial Metals",
+            "risk_profile": {
+                "level": "High",
+                "description": "Cyclical. Heavily tied to automotive and hydrogen industries."
+            },
+            "scenario_1_postcard": {
+                "archetype": "The Future Lab",
+                "visual_prompt_keywords": "hydrogen fuel cells, futuristic cars, clean energy, white metal, laboratory, innovation",
+                "outcome_description": "A high-tech lab. If the bet on hydrogen and green auto tech pays off, this is a mansion. If technology shifts elsewhere, it's a small shed."
+            },
+            "scenario_2_crisis": {
+                "crisis_behavior": "Cyclical / Supply Shock",
+                "simulation_reaction": "Highly sensitive to 'Industry Hit Hardest' alerts, specifically Automotive. However, supply shortages (Russia/South Africa) can cause price spikes even in downturns.",
+                "best_for_user_who_says": "I want to bet on specific sector recoveries."
+            },
+            "key_features": [
+                "Critical for Automotive/Hydrogen",
+                "Limited supply (Russia/South Africa)",
+                "Currently undervalued relative to gold"
+            ]
+        },
+        {
+            "id": "ishares_usd_sukuk",
+            "name": "iShares USD Sukuk ETF",
+            "type": "Fixed Income (Islamic Bonds)",
+            "risk_profile": {
+                "level": "Low (2/7)",
+                "description": "Stability focus. Pays regular income (dividends)."
+            },
+            "scenario_1_postcard": {
+                "archetype": "The Cottage",
+                "visual_prompt_keywords": "cozy stone cottage, calm garden, steady stream, sunrise, peace, solid foundation",
+                "outcome_description": "This is Image A. It's the reliable cottage. You sleep well at night. You won't get rich overnight, but you won't lose your roof in a storm."
+            },
+            "scenario_2_crisis": {
+                "crisis_behavior": "Stable / Income Generator",
+                "simulation_reaction": "When the 'Breaking News' hits, this asset barely moves. It provides cash flow (dividends) while others panic.",
+                "best_for_user_who_says": "Ignore the news. I'm going golfing."
+            },
+            "key_features": [
+                "Invests in Sovereign & Corporate Sukuk (Saudi Arabia, UAE, Indonesia)",
+                "Regular Income (Distributing)",
+                "Low volatility"
+            ]
+        },
+        {
+            "id": "ishares_msci_world_islamic",
+            "name": "iShares MSCI World Islamic ETF",
+            "type": "Global Equities",
+            "risk_profile": {
+                "level": "Medium-High (4/7)",
+                "description": "Broad exposure to developed markets (USA, Japan, Europe). Tech heavy."
+            },
+            "scenario_1_postcard": {
+                "archetype": "The Modern City Apartment",
+                "visual_prompt_keywords": "skyline view, modern architecture, connected world, globe, diverse people, steady growth",
+                "outcome_description": "A luxury apartment in a major global city. It grows with the world economy. It's safer than a single villa, but if the global economy shakes, you feel it."
+            },
+            "scenario_2_crisis": {
+                "crisis_behavior": "Market Correlated",
+                "simulation_reaction": "Drops in sync with the 'Global Markets' alert. Heavy tech exposure means it reacts to Nasdaq/Tech news.",
+                "best_for_user_who_says": "I'll hold. The world economy always recovers eventually."
+            },
+            "allocations": {
+                "top_sectors": [
+                    "Tech (37%)",
+                    "Healthcare (13%)",
+                    "Energy (10%)"
+                ],
+                "top_companies": [
+                    "Microsoft",
+                    "Tesla",
+                    "Exxon Mobil",
+                    "Johnson & Johnson"
+                ]
+            }
+        },
+        {
+            "id": "ishares_msci_usa_islamic",
+            "name": "iShares MSCI USA Islamic ETF",
+            "type": "US Equities",
+            "risk_profile": {
+                "level": "High (4/7 - Concentrated)",
+                "description": "Pure US exposure. Very heavy on Tech and Pharma."
+            },
+            "scenario_1_postcard": {
+                "archetype": "The Silicon Valley Mansion",
+                "visual_prompt_keywords": "futuristic glass house, california sunset, electric cars, digital networks, high speed, innovation",
+                "outcome_description": "The Silicon Valley Mansion. High reward if the US Tech sector booms. But if the 'Tech Bubble' bursts, this house takes a direct hit."
+            },
+            "scenario_2_crisis": {
+                "crisis_behavior": "High Beta (Tech Sensitive)",
+                "simulation_reaction": "The 'Crisis Simulator' should trigger a 'US Tech Regulation' or 'Recession' alert. This asset drops hard but recovers fast.",
+                "best_for_user_who_says": "Log in and buy more. I believe in American innovation."
+            },
+            "allocations": {
+                "top_sectors": [
+                    "Tech (43%)",
+                    "Healthcare (13%)",
+                    "Consumer Goods (12%)"
+                ],
+                "top_companies": [
+                    "Microsoft",
+                    "Tesla",
+                    "Exxon Mobil",
+                    "Salesforce"
+                ]
+            }
+        },
+        {
+            "id": "ishares_msci_em_islamic",
+            "name": "iShares MSCI EM Islamic ETF",
+            "type": "Emerging Markets Equities",
+            "risk_profile": {
+                "level": "High (4/7 - Volatile)",
+                "description": "High growth potential from developing nations (China, India, Korea)."
+            },
+            "scenario_1_postcard": {
+                "archetype": "The Jungle Villa",
+                "visual_prompt_keywords": "lush tropical villa, vibrant colors, rapid growth, wild nature, adventure, storm clouds in distance",
+                "outcome_description": "The Jungle Villa. Incredible growth potential and vibrant surroundings. But the roads are unpaved and storms (political instability) hit harder here."
+            },
+            "scenario_2_crisis": {
+                "crisis_behavior": "High Volatility",
+                "simulation_reaction": "Trigger event: 'Geopolitical instability in Asia'. This asset drops the fastest in a panic (Flight to Safety) but offers the biggest rebound gains.",
+                "best_for_user_who_says": "I want maximum growth and can stomach the rollercoaster."
+            },
+            "allocations": {
+                "top_regions": [
+                    "Korea",
+                    "India",
+                    "China",
+                    "Taiwan",
+                    "Saudi Arabia"
+                ],
+                "top_companies": [
+                    "TSMC",
+                    "Samsung",
+                    "Reliance Industries"
+                ]
+            }
+        },
+        {
+            "id": "saturna_al_kawthar_global",
+            "name": "Saturna Al-Kawthar Global Focused Equity",
+            "type": "Active Global Equities",
+            "risk_profile": {
+                "level": "High (4/7)",
+                "description": "Actively managed. Focuses on high-quality companies with sustainable growth."
+            },
+            "scenario_1_postcard": {
+                "archetype": "The Architect's Home",
+                "visual_prompt_keywords": "curated design, sustainable materials, harmony with nature, quality craftsmanship, bespoke, thoughtful",
+                "outcome_description": "The Architect's custom home. It's not just about market size; it's about quality materials. Hand-picked stocks for durability and ethical growth."
+            },
+            "scenario_2_crisis": {
+                "crisis_behavior": "Resilient Growth",
+                "simulation_reaction": "Trigger: 'General Market Uncertainty'. Because this is actively managed for 'Quality', it aims to fall less than the passive indexes during a crash.",
+                "best_for_user_who_says": "I want a professional to navigate the storm for me."
+            },
+            "allocations": {
+                "style": "Active Management, ESG & Sharia Compliant",
+                "top_companies": [
+                    "TSMC",
+                    "Alphabet",
+                    "Canadian Pacific",
+                    "ASML",
+                    "Microsoft"
+                ]
+            }
+        }
+    ]
+}
