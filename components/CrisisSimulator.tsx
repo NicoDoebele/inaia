@@ -8,6 +8,10 @@ interface CrisisSimulatorProps {
     scenario: {
         headline: string;
         newsBody: string;
+        impactData?: {
+            amountLost: string;
+            timeLost: string;
+        };
         reactions: {
             id: string;
             label: string;
@@ -43,6 +47,18 @@ export const CrisisSimulator: React.FC<CrisisSimulatorProps> = ({ scenario, onCo
                         </h2>
 
                         <div className="bg-inaia-navy-light border border-red-500/30 p-6 rounded-xl max-w-2xl mx-auto mb-8 text-left">
+                            {scenario.impactData && (
+                                <div className="flex flex-col md:flex-row gap-6 mb-6 pb-6 border-b border-white/10">
+                                    <div className="flex-1">
+                                        <div className="text-sm text-red-400 uppercase tracking-wider font-bold mb-1">Estimated Loss</div>
+                                        <div className="text-4xl font-black text-red-500">{scenario.impactData.amountLost}</div>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="text-sm text-red-400 uppercase tracking-wider font-bold mb-1">Impact</div>
+                                        <div className="text-4xl font-black text-red-500">{scenario.impactData.timeLost}</div>
+                                    </div>
+                                </div>
+                            )}
                             <p className="text-xl text-gray-200 leading-relaxed">
                                 {scenario.newsBody}
                             </p>

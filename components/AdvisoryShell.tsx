@@ -17,6 +17,8 @@ export const AdvisoryShell = () => {
     const hasFetched = useRef(false);
 
     const [monthlySavings, setMonthlySavings] = useState(500); // Default value
+    const [targetWealth, setTargetWealth] = useState(1000000); // Default value
+
 
     const fetchNextStep = useCallback(async (currentHistory: typeof history) => {
         setLoading(true);
@@ -110,6 +112,28 @@ export const AdvisoryShell = () => {
             return;
         }
 
+        // Step 4: Target Wealth (New)
+        if (currentHistory.length === 3) {
+            setCurrentStep({
+                type: 'question',
+                progress: 40,
+                content: {
+                    question: "What is your target wealth goal?",
+                    subtext: "We'll design a strategy to help you reach this milestone.",
+                    inputType: 'slider',
+                    sliderConfig: {
+                        min: 100000,
+                        max: 5000000,
+                        step: 50000,
+                        unit: "€",
+                        label: "Target Wealth"
+                    }
+                }
+            });
+            setLoading(false);
+            return;
+        }
+
         // --- AI PHASE ---
         // If we have 3 or more answers, hand off to AI.
 
@@ -134,9 +158,14 @@ export const AdvisoryShell = () => {
         const newHistory = [...history, { type: currentStep?.type || 'unknown', answer }];
         setHistory(newHistory);
 
-        // If the answer is a number (from slider), update monthly savings
-        if (typeof answer === 'number') {
-            setMonthlySavings(answer);
+        // If the answer is a number (from slider), update monthly savings or target wealth
+        if (typeof answer === 'number' && currentStep?.type === 'question' && currentStep.content.inputType === 'slider') {
+            if (currentStep.content.sliderConfig?.label === "Monthly Amount") {
+                setMonthlySavings(answer);
+            }
+            if (currentStep.content.sliderConfig?.label === "Target Wealth") {
+                setTargetWealth(answer);
+            }
         }
 
         setInputText(""); // Reset input for next step
@@ -307,7 +336,7 @@ export const AdvisoryShell = () => {
                                 riskScore={50} // Legacy prop
                                 monthlySavings={monthlySavings}
                                 setMonthlySavings={setMonthlySavings}
-                                targetWealth={1000000} // Legacy prop
+                                targetWealth={targetWealth}
                                 onBack={() => { }} // No-op
                                 dreamText="" // Legacy prop
                                 aiRecommendation={currentStep.content} // NEW PROP

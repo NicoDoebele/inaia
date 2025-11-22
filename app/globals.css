@@ -8,30 +8,87 @@
   --color-inaia-white: #F8FAFC;
   --color-inaia-glass: rgba(15, 23, 42, 0.6);
   --color-inaia-glass-border: rgba(212, 175, 55, 0.2);
-  
+
+  /* Aura Wealth Theme */
+  --color-aura-black: #020408;
+  --color-aura-cyan: #00F0FF;
+  --color-aura-purple: #7000FF;
+  --color-aura-blue-deep: #0A1128;
+
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-  
+
   --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-slow: pulse-glow 4s ease-in-out infinite;
+  --animate-gradient: gradient 8s linear infinite;
 }
 
 @layer utilities {
   .glass-panel {
     @apply bg-inaia-glass backdrop-blur-xl border border-inaia-glass-border shadow-xl rounded-2xl;
   }
-  
+
+  .glass-hero {
+    @apply bg-white/5 backdrop-blur-2xl border border-white/10;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  }
+
   .text-gradient-gold {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-inaia-gold via-yellow-200 to-inaia-gold;
+  }
+
+  .text-gradient-aura {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-aura-cyan to-white bg-[length:200%_auto] animate-gradient;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
   }
 }
 
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+  }
+
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 40px rgba(112, 0, 255, 0.4);
+  }
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 :root {
-  --background: var(--color-inaia-navy);
+  --background: var(--color-aura-black);
   --foreground: var(--color-inaia-white);
 }
 

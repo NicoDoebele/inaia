@@ -1,7 +1,7 @@
-import { ConsultationSession } from '../components/ConsultationSession';
+import { HeroSection } from '../components/HeroSection';
 
 export default function Home() {
   return (
-    <ConsultationSession />
+    <HeroSection />
   );
 }

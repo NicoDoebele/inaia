@@ -63,6 +63,10 @@ const CrisisSchema = z.object({
   content: z.object({
     headline: z.string(),
     newsBody: z.string(),
+    impactData: z.object({
+      amountLost: z.string(), // e.g. "€18,000"
+      timeLost: z.string()    // e.g. "3 years"
+    }),
     reactions: z.array(z.object({
       id: z.string(),
       label: z.string(),
@@ -139,6 +143,14 @@ export async function getAdvisoryStep(history: { type: string; answer: string | 
     - Avoid financial jargon.
     - Use 'slider' for money questions (e.g. "How much could you invest monthly?").
     - ALWAYS trigger a 'crisis' scenario step before the final result to test resilience.
+    - IN THE CRISIS SCENARIO:
+      1. Look for the user's monthly investment amount in the history (default to 500 if not found).
+      2. Calculate the "3-Year Loss" amount: (Monthly Amount * 36).
+      3. Populate 'impactData':
+         - amountLost: "€" + calculated_amount
+         - timeLost: "3 Years of Savings"
+      4. In the 'newsBody', describe the market crash and mention the bankruptcy risk.
+
     - In the RESULT, you MUST provide 'investmentTiers' (Low, Mid, High).
     - 'Mid' MUST be the amount the user indicated in the slider (or a reasonable estimate if not explicit).
     - 'Low' should be ~70% of Mid.
