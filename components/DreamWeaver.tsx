@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Sparkles, Mic, StopCircle, MessageSquare, SkipForward } from 'lucide-react';
 import { generateGoalsFromDream, generateFollowUpQuestion } from '../lib/ai';
-import { LifeGoal } from './ConsultationSession';
+import { LifeGoal } from './LifeGoalsGalaxy';
 import { SpotlightCard } from './ui/SpotlightCard';
 
 interface DreamWeaverProps {

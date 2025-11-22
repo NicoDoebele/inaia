@@ -95,12 +95,27 @@ const ResultSchema = z.object({
   })
 });
 
+const GalaxySchema = z.object({
+  type: z.literal('galaxy'),
+  progress: z.number(),
+  content: z.object({
+    // Galaxy might not need much content if it's just "show the galaxy", 
+    // but we can pass initial goals or config if needed.
+    // For now, let's keep it simple.
+    title: z.string().optional(),
+    description: z.string().optional()
+  })
+});
+
 const AdvisoryResponseSchema = z.discriminatedUnion('type', [
   QuestionSchema,
   PostcardSchema,
   CrisisSchema,
-  ResultSchema
+  ResultSchema,
+  GalaxySchema
 ]);
+
+export type GalaxyStep = z.infer<typeof GalaxySchema>;
 
 export type QuestionStep = z.infer<typeof QuestionSchema>;
 export type PostcardStep = z.infer<typeof PostcardSchema>;
@@ -123,8 +138,14 @@ export async function getAdvisoryStep(history: { type: string; answer: string | 
     Instructions:
     - You are guiding a meaningful discovery session.
     - Analyze the history. The user may have already answered some hardcoded questions about life goals.
+    - **CRITICAL**: Look for the 'galaxy' step in the history. It contains the user's specific life goals (e.g., House in 2030, Hajj in 2026).
+    - Use this information to ask RELEVANT follow-up questions. 
+      - Example: If they selected "House", ask about where they want to live or what style of home.
+      - Example: If they selected "Business", ask about their entrepreneurial spirit.
     - Target roughly 10 questions total.
-    - If history length is >= 10, YOU MUST GENERATE A RESULT.
+    - **CRITICAL**: DO NOT GENERATE A 'result' STEP IF HISTORY LENGTH IS LESS THAN 10.
+    - If history length < 10, you MUST ask another question or a crisis scenario.
+    - If history length >= 10, YOU MUST GENERATE A RESULT.
     - Ensure you cover these key topics if missing:
       1. Risk Attitude (via Postcard).
       2. Emotional Resilience -> Use 'crisis' scenario (MANDATORY before Result).
@@ -134,8 +155,8 @@ export async function getAdvisoryStep(history: { type: string; answer: string | 
     - Options for multiple choice MUST be either 2 or 4 options (never 3).
     
     Progress Logic:
-    - Calculate progress based on history length: Math.round(((history.length + 1) / 10) * 100).
-    - Start at 40% (assuming 3 hardcoded questions already answered).
+    - Calculate progress based on history length: Math.round((history.length / 10) * 100).
+    - Start at 20% (since Galaxy + Monthly Investment = 2 steps done).
     - NEVER decrease progress.
     
     Guidelines:

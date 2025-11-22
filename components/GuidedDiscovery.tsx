@@ -9,6 +9,38 @@ interface GuidedDiscoveryProps {
   onComplete: (score: number) => void;
 }
 
+const DEFAULT_POSTCARD_SCENARIO = {
+  title: "The Time Machine",
+  description: "You travel 20 years into the future. Two versions of yourself exist.",
+  scenarioA: {
+    id: 'safe' as const,
+    title: "The Safe Path",
+    description: "You lived comfortably but never took big risks. You have enough, but wonder 'what if'.",
+    imagePrompt: "A cozy but modest home, peaceful garden, elderly person reading a book."
+  },
+  scenarioB: {
+    id: 'risky' as const,
+    title: "The Bold Path",
+    description: "You took chances. You had failures, but also massive successes. You built an empire.",
+    imagePrompt: "A modern skyscraper office, looking out over a city, elderly person in a suit."
+  }
+};
+
+const DEFAULT_CRISIS_SCENARIO = {
+  headline: "Global Market Crash",
+  newsBody: "Markets have tumbled 20% overnight due to unexpected geopolitical tensions.",
+  impactData: {
+    amountLost: "€15,000",
+    timeLost: "2 Years"
+  },
+  reactions: [
+    { id: 'panic', label: 'Sell Everything', description: 'Stop the bleeding immediately.', icon: '😱' },
+    { id: 'safety', label: 'Move to Cash', description: 'Wait for things to settle.', icon: '🛡️' },
+    { id: 'ignore', label: 'Do Nothing', description: 'Stick to the long-term plan.', icon: '🧘' },
+    { id: 'opportunity', label: 'Buy More', description: 'Stocks are on sale!', icon: '🚀' }
+  ]
+};
+
 export const GuidedDiscovery: React.FC<GuidedDiscoveryProps> = ({ onComplete }) => {
   const [step, setStep] = useState<'postcard' | 'crisis' | 'horizon'>('postcard');
   const [answers, setAnswers] = useState({
@@ -22,7 +54,7 @@ export const GuidedDiscovery: React.FC<GuidedDiscoveryProps> = ({ onComplete }) 
     setStep('crisis');
   };
 
-  const handleCrisisComplete = (reaction: 'ignore' | 'safety' | 'opportunity' | 'panic') => {
+  const handleCrisisComplete = (reaction: string) => {
     setAnswers(prev => ({ ...prev, reaction }));
     setStep('horizon');
   };
@@ -66,7 +98,10 @@ export const GuidedDiscovery: React.FC<GuidedDiscoveryProps> = ({ onComplete }) 
             exit={{ opacity: 0, x: -50 }}
             className="w-full h-full"
           >
-            <TimeTravelerPostcard onComplete={handlePostcardComplete} />
+            <TimeTravelerPostcard 
+              scenario={DEFAULT_POSTCARD_SCENARIO}
+              onComplete={handlePostcardComplete} 
+            />
           </motion.div>
         )}
 
@@ -78,7 +113,10 @@ export const GuidedDiscovery: React.FC<GuidedDiscoveryProps> = ({ onComplete }) 
             exit={{ opacity: 0, x: -50 }}
             className="w-full h-full"
           >
-            <CrisisSimulator onComplete={handleCrisisComplete} />
+            <CrisisSimulator 
+              scenario={DEFAULT_CRISIS_SCENARIO}
+              onComplete={(id) => handleCrisisComplete(id)} 
+            />
           </motion.div>
         )}
 
