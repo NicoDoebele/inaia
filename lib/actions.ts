@@ -139,9 +139,18 @@ export async function getAdvisoryStep(history: { type: string; answer: string | 
     - You are guiding a meaningful discovery session.
     - Analyze the history. The user may have already answered some hardcoded questions about life goals.
     - **CRITICAL**: Look for the 'galaxy' step in the history. It contains the user's specific life goals (e.g., House in 2030, Hajj in 2026).
-    - Use this information to ask RELEVANT follow-up questions. 
-      - Example: If they selected "House", ask about where they want to live or what style of home.
-      - Example: If they selected "Business", ask about their entrepreneurial spirit.
+    - **ENGAGE DEEPLY**: Use this information to ask RELEVANT follow-up questions.
+      - Reference their specific goals: "To achieve your goal of a [Goal] by [Year]..."
+      - **CLARIFICATION**: 'Education' usually refers to **Children's Education**. Ask about their kids or future plans for them.
+      - **NOTE**: Do not over-focus on 'Business' unless the user explicitly selected it. Keep it balanced.
+    
+    - **REALITY CHECK (IMPORTANT)**:
+      - Look at the 'galaxy' goals to estimate a "Total Target Wealth".
+      - Look for the "Monthly Investment" amount in the history.
+      - If the target is high (e.g. > 1M) and monthly investment is low (e.g. < 500), YOU MUST CHALLENGE THIS.
+      - Generate a question that gently points this out: "Your goal of [Target] is ambitious for a [Monthly] contribution. Would you consider increasing your monthly investment or adjusting your timeline?"
+      - This shows you are a *smart* advisor, not just a form filler.
+
     - Target roughly 10 questions total.
     - **CRITICAL**: DO NOT GENERATE A 'result' STEP IF HISTORY LENGTH IS LESS THAN 10.
     - If history length < 10, you MUST ask another question or a crisis scenario.
@@ -155,7 +164,7 @@ export async function getAdvisoryStep(history: { type: string; answer: string | 
       - Check the history for a step with type: 'postcard'. If it exists, **DO NOT GENERATE ANOTHER POSTCARD**.
       - Check the history for a step with type: 'crisis'. If it exists, **DO NOT GENERATE ANOTHER CRISIS**.
       - 'postcard' should ideally happen early (steps 3-6).
-      - 'crisis' should ideally happen later (steps 7-9), but MUST happen before the result.
+      - 'crisis' **MUST NOT** happen in the first 3 steps. It should happen later (steps 7-9), but MUST happen before the result.
     - DO NOT ask direct financial questions like "What is your risk tolerance?".
     - Ask INDIRECT, psychological, or lifestyle questions.
     - Options for multiple choice MUST be either 2 or 4 options (never 3).
@@ -192,11 +201,19 @@ export async function getAdvisoryStep(history: { type: string; answer: string | 
       step: AdvisoryResponseSchema
     });
 
+    console.log("--- AI PROMPT ---");
+    console.log(context);
+    console.log("-----------------");
+
     const { object } = await generateObject({
       model: openai('gpt-4o'),
       schema: WrapperSchema,
       prompt: context,
     });
+
+    console.log("--- AI RESPONSE ---");
+    console.log(JSON.stringify(object.step, null, 2));
+    console.log("-------------------");
 
     return object.step;
   } catch (error) {
