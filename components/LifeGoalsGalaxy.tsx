@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
+import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
 import { Plus, Trash2, ArrowRight, GraduationCap, Home, Plane, Coins, Briefcase } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -31,10 +31,10 @@ const GOAL_TYPES: { type: GoalType; icon: React.ElementType; label: string; defa
 const START_YEAR = new Date().getFullYear();
 const TIMELINE_YEARS = 30;
 
-// Helper to generate random values safely outside render cycle or in handlers
-const generateRandomY = () => (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 80 + 40);
+// -- Helpers --
 const generateId = () => Math.random().toString(36).substr(2, 9);
 const generateRandomYear = () => START_YEAR + 5 + Math.floor(Math.random() * 10);
+const generateRandomY = () => (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 80 + 40);
 
 const GoalStar = ({ 
   goal, 
@@ -48,112 +48,180 @@ const GoalStar = ({
   containerRef: React.RefObject<HTMLDivElement | null>;
 }) => {
   const GoalIcon = GOAL_TYPES.find(t => t.type === goal.type)?.icon || Plus;
-  const [isDragging, setIsDragging] = useState(false);
-  const [localYear, setLocalYear] = useState(goal.year);
   
-  // Initialize randomY once per component instance
+  // -- Motion Values (Bypasses React Render Cycle for Position) --
+  const x = useMotionValue(0);
+  
+  // -- Local State --
+  const [isDragging, setIsDragging] = useState(false);
+  const [localYear, setLocalYear] = useState(goal.year); 
   const [randomY] = useState(generateRandomY);
 
-  // Calculate percentage position based on year
-  // Maps year range [START_YEAR, END_YEAR] to [5%, 95%]
-  const getPositionFromYear = (y: number) => {
-    const rawPercent = (y - START_YEAR) / TIMELINE_YEARS;
-    return 5 + (rawPercent * 90); // Map 0-1 to 5-95%
-  };
+  // -- Math Helper: Convert Year to Pixel Position --
+  // We use this to snap the star to the correct spot on load/resize
+  const calculateXFromYear = useCallback((targetYear: number, containerWidth: number) => {
+    const rawPercent = (targetYear - START_YEAR) / TIMELINE_YEARS;
+    // Map 0-1 to 5%-95% of width
+    return (containerWidth * 0.05) + (rawPercent * (containerWidth * 0.90));
+  }, []);
 
-  const initialLeft = `${getPositionFromYear(goal.year)}%`;
-
-  // Correctly reverse map pixel X coordinate back to Year
-  const calculateYearFromX = (x: number, rectWidth: number) => {
-    // The active area is from 5% to 95% of rectWidth
-    const startX = rectWidth * 0.05;
-    const activeWidth = rectWidth * 0.90;
-
-    // Calculate progress within the active area
-    // clamp relativeX between 0 and activeWidth
-    const relativeX = Math.max(0, Math.min(activeWidth, x - startX));
+  // -- Math Helper: Convert Pixel Position to Year --
+  const calculateYearFromX = useCallback((currentX: number) => {
+    if (!containerRef.current) return START_YEAR;
+    const width = containerRef.current.getBoundingClientRect().width;
     
+    const startX = width * 0.05;
+    const activeWidth = width * 0.90;
+
+    // Clamp X to active area
+    const relativeX = Math.max(0, Math.min(activeWidth, currentX - startX));
     const ratio = relativeX / activeWidth;
     
     return Math.round(START_YEAR + (ratio * TIMELINE_YEARS));
-  };
+  }, [containerRef]);
+
+  // -- Sync Position on Load & Resize --
+  // This ensures the star is in the right place before we even touch it
+  useLayoutEffect(() => {
+    if (!containerRef.current || isDragging) return;
+    
+    const width = containerRef.current.getBoundingClientRect().width;
+    const targetX = calculateXFromYear(goal.year, width);
+    
+    // Update the MotionValue directly (no re-render)
+    x.set(targetX);
+  }, [goal.year, containerRef, calculateXFromYear, x, isDragging]);
+
+  // Handle Window Resize to keep stars in correct relative position
+  useEffect(() => {
+    const handleResize = () => {
+        if (!containerRef.current || isDragging) return;
+        const width = containerRef.current.getBoundingClientRect().width;
+        x.set(calculateXFromYear(goal.year, width));
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [containerRef, goal.year, isDragging, x, calculateXFromYear]);
+
+
+  // -- Event Listeners for Dragging --
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handlePointerMove = (e: PointerEvent) => {
+        if (!containerRef.current) return;
+        
+        // 1. Calculate new X position
+        const rect = containerRef.current.getBoundingClientRect();
+        const relativeX = e.clientX - rect.left;
+        
+        // 2. Direct Update to MotionValue (Instant, no React Lag)
+        x.set(relativeX);
+
+        // 3. Update Text Label (Only re-render if year integer changes)
+        const newYear = calculateYearFromX(relativeX);
+        setLocalYear(prev => {
+            if (prev !== newYear) return newYear;
+            return prev;
+        });
+    };
+
+    const handlePointerUp = (e: PointerEvent) => {
+        setIsDragging(false);
+        if (!containerRef.current) return;
+
+        const rect = containerRef.current.getBoundingClientRect();
+        const relativeX = e.clientX - rect.left;
+        const finalYear = calculateYearFromX(relativeX);
+        
+        // Commit the change
+        if (finalYear !== goal.year) {
+          updateGoalYear(goal.id, finalYear);
+        } else {
+            // If year didn't change but pixels did, snap back visually
+            const targetX = calculateXFromYear(goal.year, rect.width);
+            x.set(targetX); 
+        }
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [isDragging, calculateYearFromX, calculateXFromYear, containerRef, goal.id, goal.year, updateGoalYear, x]);
+
 
   return (
     <motion.div
       layoutId={goal.id}
       initial={{ scale: 0, opacity: 0 }}
-      animate={{ 
-        scale: 1, 
-        opacity: 1, 
-        left: initialLeft, 
-        top: `calc(50% + ${randomY}px)` 
-      }}
+      animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0, opacity: 0 }}
-      drag="x"
-      dragMomentum={false}
-      dragConstraints={containerRef}
-      dragElastic={0} 
-      onDragStart={() => setIsDragging(true)}
-      onDrag={(event, info) => {
-         if (!containerRef.current) return;
-         const rect = containerRef.current.getBoundingClientRect();
-         // info.point.x is page-relative coordinates
-         // We need position relative to the container
-         const relativeX = info.point.x - rect.left;
-         
-         const newYear = calculateYearFromX(relativeX, rect.width);
-         setLocalYear(newYear);
+      className="absolute z-10 select-none touch-none"
+      // HERE IS THE MAGIC: 'x' is a MotionValue. Changing it updates the GPU transform directly.
+      style={{ 
+        x, 
+        top: `calc(50% + ${randomY}px)`,
+        transform: 'translate(-50%, -50%)' // Center the star on the coordinate
       }}
-      onDragEnd={(event, info) => {
-         setIsDragging(false);
-         if (!containerRef.current) return;
-         const rect = containerRef.current.getBoundingClientRect();
-         const relativeX = info.point.x - rect.left;
-         
-         const newYear = calculateYearFromX(relativeX, rect.width);
-         updateGoalYear(goal.id, newYear);
-      }}
-      className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing group z-10"
-      style={{ left: initialLeft, top: '50%' }} // Fallback/SSR style
     >
-       <div className="relative">
-         {/* Connecting Line to timeline */}
-         <motion.div 
-           animate={{ height: isDragging ? 0 : Math.abs(randomY), opacity: isDragging ? 0.5 : 1 }}
-           className={clsx(
-             "absolute left-1/2 w-px bg-linear-to-b from-inaia-gold/50 to-transparent -translate-x-1/2 -z-10",
-             randomY > 0 ? "bottom-full origin-bottom" : "top-full origin-top"
-           )}
-         />
+        <div className="relative group -translate-x-1/2 -translate-y-1/2">
+          
+          {/* Hit Area */}
+          <div 
+            onPointerDown={(e) => {
+                 e.preventDefault();
+                 e.stopPropagation();
+                 setIsDragging(true);
+            }}
+            className="absolute inset-[-20px] z-20 cursor-grab active:cursor-grabbing rounded-full"
+          />
 
-         {/* The Star/Planet */}
-         <div className={clsx(
-           "w-16 h-16 rounded-full bg-inaia-navy border-2 shadow-[0_0_30px_rgba(212,175,55,0.4)] flex items-center justify-center relative z-10 transition-all duration-300",
-           isDragging ? "scale-125 border-white shadow-[0_0_50px_rgba(255,255,255,0.5)]" : "border-inaia-gold group-hover:scale-110"
-         )}>
-           <GoalIcon className={isDragging ? "text-white" : "text-inaia-gold"} size={isDragging ? 32 : 24} />
-         </div>
+          {/* Line */}
+          <div 
+             className={clsx(
+              "absolute left-1/2 w-px -translate-x-1/2 -z-10 pointer-events-none transition-all duration-300",
+              randomY > 0 ? "bottom-full origin-bottom" : "top-full origin-top",
+              isDragging ? "bg-white opacity-50" : "bg-linear-to-b from-inaia-gold/50 to-transparent"
+             )}
+             style={{ height: Math.abs(randomY) }}
+          />
 
-         {/* Delete Button */}
-         <button 
-           onClick={(e) => { e.stopPropagation(); removeGoal(goal.id); }}
-           className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-red-600"
-         >
-           <Trash2 size={12} />
-         </button>
+          {/* Icon Circle */}
+          <div className={clsx(
+            "w-16 h-16 rounded-full bg-inaia-navy border-2 flex items-center justify-center relative z-10 transition-all duration-200 pointer-events-none",
+            isDragging 
+              ? "border-white scale-125 shadow-[0_0_50px_rgba(255,255,255,0.5)]" 
+              : "border-inaia-gold shadow-[0_0_30px_rgba(212,175,55,0.4)] group-hover:scale-110"
+          )}>
+            <GoalIcon className={isDragging ? "text-white" : "text-inaia-gold"} size={isDragging ? 28 : 24} />
+          </div>
 
-         {/* Label */}
-         <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 text-center w-40 pointer-events-none">
-           <div className="text-sm font-bold text-white shadow-black drop-shadow-md">{goal.type}</div>
-           <div className="text-xs text-inaia-gold font-mono">€{goal.cost.toLocaleString()}</div>
-           <div className={clsx(
-             "text-xs transition-all duration-200 font-bold",
-             isDragging ? "text-white text-lg scale-125" : "text-gray-400"
-           )}>
-             {isDragging ? localYear : goal.year}
-           </div>
-         </div>
-       </div>
+          {/* Delete Button */}
+          {!isDragging && (
+             <button 
+               onClick={(e) => { e.stopPropagation(); removeGoal(goal.id); }}
+               className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-red-600 cursor-pointer pointer-events-auto"
+             >
+               <Trash2 size={12} />
+             </button>
+          )}
+
+          {/* Label */}
+          <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 text-center w-40 pointer-events-none select-none">
+            <div className="text-sm font-bold text-white shadow-black drop-shadow-md">{goal.type}</div>
+            <div className="text-xs text-inaia-gold font-mono">€{goal.cost.toLocaleString()}</div>
+            <div className={clsx(
+              "text-xs transition-all duration-200 font-bold mt-1",
+              isDragging ? "text-white text-base" : "text-gray-400"
+            )}>
+              {isDragging ? localYear : goal.year}
+            </div>
+          </div>
+        </div>
     </motion.div>
   );
 };
@@ -237,10 +305,8 @@ export const LifeGoalsGalaxy: React.FC<LifeGoalsGalaxyProps> = ({ goals, setGoal
       </div>
 
       {/* The Universe (Visualization Area) */}
-      <div className="flex-1 glass-panel relative overflow-hidden flex flex-col">
+      <div className="flex-1 glass-panel relative overflow-hidden flex flex-col select-none">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-inaia-blue-accent/20 via-inaia-navy to-inaia-navy z-0"></div>
-        
-        {/* Stars/Grid Animation Background */}
         <div className="absolute inset-0 z-0 opacity-30" style={{ backgroundImage: 'radial-gradient(white 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
 
         <div className="relative z-10 flex-1 p-8 flex items-center justify-center">
@@ -260,15 +326,15 @@ export const LifeGoalsGalaxy: React.FC<LifeGoalsGalaxyProps> = ({ goals, setGoal
                {/* Timeline Line */}
                <div className="absolute top-1/2 left-0 w-full h-px bg-linear-to-r from-transparent via-inaia-gold/50 to-transparent"></div>
                
-               {/* Year Markers (Every 5 years) */}
-               <div className="absolute top-1/2 left-0 w-full h-0">
+               {/* Year Markers */}
+               <div className="absolute top-1/2 left-0 w-full h-0 pointer-events-none">
                   {Array.from({ length: 7 }).map((_, i) => {
                     const year = START_YEAR + (i * 5);
                     const percent = 5 + ((i * 5) / TIMELINE_YEARS) * 90;
                     return (
                       <div key={year} className="absolute transform -translate-x-1/2 top-4 flex flex-col items-center" style={{ left: `${percent}%` }}>
-                         <div className="w-px h-2 bg-white/20 mb-1"></div>
-                         <div className="text-[10px] text-gray-500">{year}</div>
+                          <div className="w-px h-2 bg-white/20 mb-1"></div>
+                          <div className="text-[10px] text-gray-500">{year}</div>
                       </div>
                     );
                   })}
